@@ -309,7 +309,7 @@
     <section class="cards">
 
       <!-- Card 1: 확률과 통계 -->
-      <a class="card" href="#" onclick="handleCardClick(event, '확률과 통계')">
+      <a class="card" href="prob_stat.html">
         <div class="card-top">
           <div class="card-header">
             <span class="tag">고등수학</span>
@@ -341,7 +341,7 @@
       </a>
 
       <!-- Card 2: 미적분 -->
-      <a class="card" href="#" onclick="handleCardClick(event, '미적분')">
+      <a class="card" href="calculus.html">
         <div class="card-top">
           <div class="card-header">
             <span class="tag">고등수학</span>
@@ -383,7 +383,7 @@
       </a>
 
       <!-- Card 3: 기하 -->
-      <a class="card" href="#" onclick="handleCardClick(event, '기하')">
+      <a class="card" href="geometry.html">
         <div class="card-top">
           <div class="card-header">
             <span class="tag">고등수학</span>
@@ -459,10 +459,6 @@
       if (e.key === 'Enter') handleSubscribe();
     });
 
-    function handleCardClick(e, subject) {
-      e.preventDefault();
-      showToast(`${subject} 페이지는 준비 중입니다. 곧 만나요! 📚`);
-    }
   </script>
 </body>
 </html>
