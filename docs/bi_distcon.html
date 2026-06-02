@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>뽑기로 배우는 이항분포</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:       #111111;
+    --gray:        #666666;
+    --bg:          #fafafa;
+    --white:       #ffffff;
+    --accent1:     #c5d8f0;
+    --accent2:     #a8c4e8;
+    --accent3:     #8ab4d8;
+    --accent4:     #ddeeff;
+    --text-accent: #4a7aaa;
+    --shadow-sm:   0 2px 12px rgba(0,0,0,0.07);
+    --shadow-md:   0 8px 28px rgba(0,0,0,0.10);
+    --rare-bg:     #e8f2ff;
+    --rare-bd:     #4a7aaa;
+    --epic-bg:     #f0e8ff;
+    --epic-bd:     #7a5aba;
+    --leg-bg:      #fffbdc;
+    --leg-bd:      #c8a000;
+  }
+
+  body {
+    font-family: 'Inter', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg);
+    color: var(--black);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 3rem;
+    border-bottom: 1px solid #e8e8e8;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo { font-size:1.05rem; font-weight:700; letter-spacing:-0.02em; text-decoration:none; color:var(--black); }
+  .btn-home {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1.1rem; border: 1.5px solid var(--black); border-radius: 999px;
+    background: transparent; cursor: pointer; text-decoration: none; color: var(--black);
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-home:hover { background: var(--black); color: #fff; }
+
+  /* ── HERO ── */
+  .hero {
+    text-align: center; padding: 4rem 2rem 2.5rem;
+    position: relative; overflow: hidden;
+  }
+  .deco { position:absolute; pointer-events:none; animation: float 4s ease-in-out infinite; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-12px) rotate(8deg); }
+  }
+  .deco-1 { top:20%; left:6%;   animation-delay:0s;   }
+  .deco-2 { top:12%; left:18%;  animation-delay:0.6s; }
+  .deco-3 { top:20%; right:7%;  animation-delay:1.2s; }
+  .deco-4 { top:8%;  right:20%; animation-delay:0.3s; }
+  .deco-6 { top:65%; right:5%;  animation-delay:0.9s; }
+  .hero-tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 600;
+    background: var(--accent1); color: var(--text-accent);
+    padding: 0.3rem 0.9rem; border-radius: 999px; letter-spacing: 0.04em; margin-bottom: 1.1rem;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 6vw, 4rem); font-weight: 900;
+    letter-spacing: -0.04em; line-height: 1.05; margin-bottom: 1.1rem; color: var(--black);
+  }
+  .hero-desc { font-size: 0.97rem; color: var(--gray); line-height: 1.85; max-width: 520px; margin: 0 auto; }
+
+  /* ── MAIN ── */
+  .main { max-width: 900px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: var(--white); border-radius: 20px;
+    box-shadow: var(--shadow-sm); padding: 1.6rem 1.8rem; margin-bottom: 1.2rem;
+  }
+  .section-title {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--text-accent); text-transform: uppercase; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before {
+    content: ''; display: inline-block; width: 3px; height: 14px;
+    background: var(--accent3); border-radius: 2px;
+  }
+
+  /* ── 설정 ── */
+  .settings-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .settings-row label { font-size: 0.88rem; color: var(--gray); font-weight: 500; white-space: nowrap; }
+
+  /* 화살표 spinner 스타일 */
+  .settings-row input[type="number"] {
+    width: 90px; background: var(--bg); border: 1.5px solid #d0d8e0;
+    border-radius: 10px; color: var(--black); font-family: 'Inter', sans-serif;
+    font-size: 1.05rem; font-weight: 700; padding: 7px 6px; text-align: center;
+    outline: none; transition: border-color 0.25s, box-shadow 0.25s;
+    -moz-appearance: textfield;
+  }
+  .settings-row input[type="number"]::-webkit-inner-spin-button,
+  .settings-row input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1; cursor: pointer; height: 28px;
+  }
+  .settings-row input[type="number"]:focus {
+    border-color: var(--text-accent); box-shadow: 0 0 0 3px rgba(74,122,170,0.15);
+  }
+  .unit { color: var(--gray); font-size: 0.85rem; }
+
+  /* ── 확률표 ── */
+  .prob-table { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 1rem; }
+  .prob-item { border-radius: 12px; padding: 10px 8px; text-align: center; border: 1.5px solid #e0e0e0; background: var(--bg); transition: all 0.3s; }
+  .prob-item .grade-name  { font-size: 0.68rem; font-weight: 600; color: var(--gray); margin-bottom: 5px; letter-spacing: 0.02em; }
+  .prob-item .grade-value { font-size: 1rem; font-weight: 800; transition: all 0.3s; }
+  .prob-item.normal    { border-color: #ccc; }
+  .prob-item.normal    .grade-value { color: #888; }
+  .prob-item.rare      { border-color: var(--rare-bd); background: var(--rare-bg); }
+  .prob-item.rare      .grade-value { color: var(--rare-bd); }
+  .prob-item.epic      { border-color: var(--epic-bd); background: var(--epic-bg); }
+  .prob-item.epic      .grade-value { color: var(--epic-bd); }
+  .prob-item.legendary { border-color: var(--leg-bd); background: var(--leg-bg); }
+  .prob-item.legendary .grade-value { color: #8a6000; }
+
+  /* ── 뽑기 버튼 ── */
+  .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 1.2rem; }
+  .btn-gacha {
+    padding: 13px 26px; border: none; border-radius: 12px;
+    font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: transform 0.15s, box-shadow 0.2s; letter-spacing: -0.01em;
+  }
+  .btn-gacha:hover  { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .btn-gacha:active { transform: scale(0.97); }
+  .btn-x1   { background: var(--accent2); color: #1a3a5a; border: 1.5px solid var(--accent3); }
+  .btn-x10  { background: var(--text-accent); color: #fff; }
+  .btn-x100 { background: #c8a000; color: #3a2800; }
+  .btn-reset {
+    padding: 11px 18px; border: 1.5px solid #ddd; border-radius: 10px;
+    background: var(--bg); color: var(--gray); font-family: 'Inter', sans-serif;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-reset:hover { border-color: #999; color: var(--black); }
+
+  /* ── 결과 섹션 헤더 ── */
+  .result-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+  .queue-badge {
+    font-size: 0.72rem; font-weight: 700; background: var(--accent4); color: var(--text-accent);
+    padding: 3px 10px; border-radius: 999px; letter-spacing: 0.03em;
+  }
+  .hint { text-align: center; color: #bbb; font-size: 0.88rem; padding: 24px 0 8px; }
+
+  /* ── 결과 그리드 (10열 고정) ── */
+  #resultGrid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 5px;
+  }
+
+  /* ── 검 카드 (10열용 소형) ── */
+  .sword-card {
+    border-radius: 8px; padding: 8px 3px 7px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    animation: cardPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    position: relative; overflow: hidden; border: 2px solid; cursor: default;
+  }
+  .sword-card.settled { animation: none !important; }
+  .sword-card.settled.epic      { animation: epicPulse 2.2s ease-in-out infinite !important; }
+  .sword-card.settled.legendary { animation: legShine 2s linear infinite, legShake 0.1s linear infinite !important; }
+
+  @keyframes cardPop {
+    from { transform: scale(0) rotate(-10deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+  }
+  .sword-card .emoji { font-size: 1.2rem; line-height: 1; }
+  .sword-card .grade { font-size: 0.48rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+  .sword-card .name  { font-size: 0.52rem; font-weight: 600; word-break: keep-all; line-height: 1.2; }
+
+  .sword-card.normal    { background: #f5f5f5; border-color: #ccc; }
+  .sword-card.normal    .grade { color: #999; }
+  .sword-card.normal    .name  { color: #777; }
+
+  .sword-card.rare { background: var(--rare-bg); border-color: var(--rare-bd); box-shadow: 0 0 8px rgba(74,122,170,0.25); }
+  .sword-card.rare .grade { color: var(--rare-bd); }
+  .sword-card.rare .name  { color: #2a5a8a; }
+
+  .sword-card.epic {
+    background: var(--epic-bg); border-color: var(--epic-bd);
+    animation: cardPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both, epicPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes epicPulse {
+    0%,100% { box-shadow: 0 0 10px rgba(122,90,186,0.28); transform: scale(1); }
+    50%      { box-shadow: 0 0 20px rgba(122,90,186,0.55); transform: scale(1.04); }
+  }
+  .sword-card.epic .grade { color: var(--epic-bd); }
+  .sword-card.epic .name  { color: #5a3a9a; }
+
+  .sword-card.legendary {
+    background: var(--leg-bg); border-color: var(--leg-bd);
+    animation: cardPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both,
+               legShine 2s linear infinite, legShake 0.1s linear infinite;
+  }
+  @keyframes legShine {
+    0%   { border-color:#c8a000; box-shadow:0 0 18px rgba(200,160,0,0.45); }
+    33%  { border-color:#e8b800; box-shadow:0 0 26px rgba(232,184,0,0.6);  }
+    66%  { border-color:#d47000; box-shadow:0 0 20px rgba(212,112,0,0.5);  }
+    100% { border-color:#c8a000; box-shadow:0 0 18px rgba(200,160,0,0.45); }
+  }
+  @keyframes legShake {
+    0%,100% { transform: translateX(0); }
+    25%     { transform: translateX(-1px); }
+    75%     { transform: translateX(1px);  }
+  }
+  .sword-card.legendary .grade { color: #8a6000; font-weight: 800; }
+  .sword-card.legendary .name  { color: #5a3a00; font-weight: 700; }
+  .sword-card.legendary .emoji { filter: drop-shadow(0 0 3px rgba(200,160,0,0.8)); }
+  .sword-card.legendary::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.5) 50%, transparent 70%);
+    background-size: 200% 100%;
+    animation: shimmerSweep 1.6s linear infinite; pointer-events: none;
+  }
+  @keyframes shimmerSweep {
+    from { background-position: -100% 0; }
+    to   { background-position: 200% 0;  }
+  }
+
+  /* ── 통계 ── */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+  @media (max-width: 480px) { .stats-grid { grid-template-columns: 1fr; } }
+  .stat-box { background: var(--bg); border: 1.5px solid #e8e8e8; border-radius: 12px; padding: 14px 16px; }
+  .stat-label { font-size: 0.72rem; font-weight: 600; color: var(--gray); letter-spacing: 0.04em; margin-bottom: 6px; text-transform: uppercase; }
+  .stat-value { font-size: 1.65rem; font-weight: 900; color: var(--black); letter-spacing: -0.03em; }
+  .stat-sub   { font-size: 0.78rem; color: var(--gray); margin-top: 3px; }
+
+  /* ── 확률분포표 ── */
+  .dist-box {
+    background: #f0f7ff; border: 1.5px solid var(--accent2); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 1rem; overflow-x: auto;
+  }
+  .dist-title { font-size: 0.72rem; font-weight: 700; color: var(--text-accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  .dist-formula-bar {
+    font-family: 'Courier New', monospace; font-size: 0.9rem; color: #1a3a5a;
+    background: #fff; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;
+    border-left: 3px solid var(--text-accent); box-shadow: var(--shadow-sm);
+  }
+  .dist-formula-bar .hl  { color: #c8a000; font-weight: 700; }
+  .dist-formula-bar .hb  { color: var(--text-accent); font-weight: 700; }
+  .dist-formula-bar .hp  { color: #7a5aba; font-weight: 700; }
+
+  .dist-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  .dist-table th {
+    background: var(--accent4); color: var(--text-accent); padding: 8px 10px;
+    font-size: 0.7rem; letter-spacing: 0.05em; text-align: center; white-space: nowrap;
+  }
+  .dist-table th:first-child { border-radius: 8px 0 0 0; }
+  .dist-table th:last-child  { border-radius: 0 8px 0 0; }
+  .dist-table td {
+    padding: 6px 10px; border-bottom: 1px solid #eef2f7; text-align: center;
+    font-family: 'Courier New', monospace; font-size: 0.78rem; background: #fff;
+  }
+  .dist-table tr:hover td { background: #f5faff; }
+  .dist-table .k-col { font-weight: 800; color: var(--text-accent); width: 40px; }
+  .dist-table .ellipsis td { color: #bbb; font-size: 1rem; letter-spacing: 0.1em; }
+  .coeff { color: var(--text-accent); font-weight: 700; }
+  .p-part { color: #c8a000; font-weight: 700; }
+  .q-part { color: #7a5aba; font-weight: 700; }
+
+  /* ── 확률 분포 그래프 ── */
+  .chart-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .chart-label { font-size: 0.73rem; font-weight: 600; color: var(--gray); width: 72px; flex-shrink: 0; text-align: right; }
+  .chart-bar-wrap { flex: 1; background: #f0f0f0; border-radius: 6px; height: 24px; overflow: hidden; }
+  .chart-bar {
+    height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 7px;
+    font-size: 0.7rem; font-weight: 700; min-width: 4px;
+    transition: width 0.75s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap; overflow: hidden;
+  }
+  .bar-0  { background: linear-gradient(90deg, #d0d0d0, #bbb); color: #555; }
+  .bar-1  { background: linear-gradient(90deg, var(--accent2), var(--accent3)); color: #1a3a5a; }
+  .bar-2  { background: linear-gradient(90deg, #c8b0e8, var(--epic-bd)); color: #3a1a6a; }
+  .bar-3p { background: linear-gradient(90deg, #f0d060, #c8a000); color: #3a2800; }
+  .chart-pct { font-size: 0.73rem; font-weight: 700; color: var(--gray); width: 48px; flex-shrink: 0; }
+
+  /* ── 정규분포 근사 ── */
+  .normal-box {
+    background: #f5fff5; border: 1.5px solid #90c890; border-radius: 14px;
+    padding: 16px 18px; margin-top: 1rem;
+  }
+  .normal-title { font-size: 0.72rem; font-weight: 700; color: #2a6a2a; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+  .normal-formula {
+    font-family: 'Courier New', monospace; font-size: 0.88rem; color: #1a401a;
+    background: #fff; border-radius: 8px; padding: 10px 14px; margin-bottom: 10px;
+    border-left: 3px solid #90c890; box-shadow: var(--shadow-sm);
+  }
+  .normal-formula .hn { color: #2a8a2a; font-weight: 700; }
+  .normal-formula .hv { color: #c8a000; font-weight: 700; }
+  .normal-vals {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;
+  }
+  @media (max-width: 520px) { .normal-vals { grid-template-columns: 1fr 1fr; } }
+  .normal-val-box { background: #fff; border: 1px solid #c0e0c0; border-radius: 10px; padding: 10px 12px; text-align: center; }
+  .normal-val-label { font-size: 0.68rem; font-weight: 600; color: #4a8a4a; letter-spacing: 0.04em; margin-bottom: 4px; }
+  .normal-val-num   { font-size: 1.15rem; font-weight: 900; color: #1a5a1a; letter-spacing: -0.02em; }
+  .normal-note { font-size: 0.8rem; color: #4a7a4a; line-height: 1.7; background: #eafaea; border-radius: 8px; padding: 10px 13px; }
+
+  /* 미니 히스토그램 */
+  .mini-hist { display: flex; align-items: flex-end; gap: 2px; height: 60px; margin: 10px 0 6px; background: #f5fff5; border-radius: 8px; padding: 6px 8px 0; overflow: hidden; }
+  .mini-bar { flex: 1; border-radius: 3px 3px 0 0; background: linear-gradient(to top, #90c890, #c0e8c0); min-width: 4px; transition: height 0.6s ease; }
+  .mini-bar.peak { background: linear-gradient(to top, #2a8a2a, #60c060); }
+  .mini-axis { font-size: 0.62rem; color: #6a9a6a; text-align: center; letter-spacing: 0.02em; }
+
+  /* ── 전설 오버레이 ── */
+  #legendaryFlash {
+    position: fixed; inset: 0; z-index: 9999; pointer-events: none; opacity: 0; display: none;
+    background: radial-gradient(ellipse at center, #ffe066 0%, #ffd700 40%, transparent 70%);
+  }
+  #legendaryFlash.flash { display: block; animation: goldenFlash 1.1s ease-out forwards; }
+  @keyframes goldenFlash {
+    0%  { opacity: 0; } 18% { opacity: 0.55; } 100% { opacity: 0; }
+  }
+  #legendaryBanner {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%) scale(0);
+    z-index: 10000; background: #fff; border: 2.5px solid var(--leg-bd); border-radius: 20px;
+    padding: 28px 48px; text-align: center;
+    box-shadow: 0 20px 60px rgba(200,160,0,0.35), 0 0 0 8px rgba(200,160,0,0.1); display: none;
+  }
+  #legendaryBanner.show { display: block; animation: bannerPop 0.45s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+  #legendaryBanner.hide { animation: bannerFade 0.35s ease-in forwards; }
+  @keyframes bannerPop  { to { transform: translate(-50%,-50%) scale(1); } }
+  @keyframes bannerFade { to { transform: translate(-50%,-50%) scale(0); opacity:0; } }
+  #legendaryBanner h2 { font-size: 1.6rem; font-weight: 900; color: #8a6000; letter-spacing: -0.03em; }
+  #legendaryBanner p  { font-size: 0.95rem; color: var(--gray); margin-top: 6px; }
+
+  /* ── 반응형 ── */
+  @media (max-width: 640px) {
+    nav { padding: 1rem 1.25rem; }
+    .hero { padding: 3rem 1.25rem 2rem; }
+    .deco-1,.deco-2,.deco-3,.deco-4 { display: none; }
+    .prob-table { grid-template-columns: 1fr 1fr; }
+    .btn-gacha  { padding: 11px 16px; font-size: 0.88rem; }
+    .section-card { padding: 1.2rem 1.2rem; }
+    #resultGrid { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #f0f0f0; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div id="legendaryFlash"></div>
+<div id="legendaryBanner">
+  <h2>⚔️ 전설의 성검 등장!</h2>
+  <p>축하합니다! 전설급 아이템을 획득했습니다!</p>
+</div>
+
+<nav>
+  <a href="index.html" class="nav-logo">∑ 재미있는 수학 콘텐츠</a>
+  <a href="prob_stat.html" class="btn-home">← 확률과 통계</a>
+</nav>
+
+<section class="hero">
+  <svg class="deco deco-1" width="28" height="28" viewBox="0 0 28 28"><polygon points="14,2 17,10 26,10 19,16 22,24 14,19 6,24 9,16 2,10 11,10" fill="#c5d8f0" opacity="0.9"/></svg>
+  <svg class="deco deco-2" width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="9" fill="#a8c4e8" opacity="0.75"/></svg>
+  <svg class="deco deco-3" width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9" fill="#c5d8f0" opacity="0.8"/></svg>
+  <svg class="deco deco-4" width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#8ab4d8" opacity="0.6"/></svg>
+  <svg class="deco deco-6" width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" fill="#a8c4e8" opacity="0.8"/></svg>
+
+  <span class="hero-tag">확률과 통계 · 이항분포</span>
+  <h1>뽑기로 배우는 이항분포</h1>
+  <p class="hero-desc">
+    동일한 조건에서 반복되는 각 뽑기는 서로 영향을 주지 않는 <strong>독립시행</strong>입니다.<br>
+    독립시행을 n번 반복할 때 특정 결과가 나오는 횟수의 분포, 그것이 바로 <strong>이항분포 B(n, p)</strong>입니다.
+  </p>
+</section>
+
+<div class="main">
+
+  <!-- ── 설정 ── -->
+  <div class="section-card">
+    <div class="section-title">뽑기 설정</div>
+    <div class="settings-row">
+      <label>전설의 성검 등장 확률 (p)</label>
+      <input type="number" id="probInput" value="1" min="1" max="50" step="1"
+             oninput="applyProb()" onchange="applyProb()">
+      <span class="unit">%</span>
+    </div>
+    <div class="prob-table">
+      <div class="prob-item normal">
+        <div class="grade-name">Normal 🗡️</div>
+        <div class="grade-value" id="pNormal">70.00%</div>
+      </div>
+      <div class="prob-item rare">
+        <div class="grade-name">Rare 🗡️</div>
+        <div class="grade-value" id="pRare">25.00%</div>
+      </div>
+      <div class="prob-item epic">
+        <div class="grade-name">Epic ⚔️</div>
+        <div class="grade-value" id="pEpic">4.00%</div>
+      </div>
+      <div class="prob-item legendary">
+        <div class="grade-name">Legendary ⚔️</div>
+        <div class="grade-value" id="pLegendary">1.00%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 뽑기 버튼 ── -->
+  <div class="btn-row">
+    <button class="btn-gacha btn-x1"   onclick="gacha(1)">🗡️ 1회 뽑기</button>
+    <button class="btn-gacha btn-x10"  onclick="gacha(10)">⚔️ 10회 뽑기</button>
+    <button class="btn-gacha btn-x100" onclick="gacha(100)">✨ 100회 뽑기</button>
+    <button class="btn-reset"          onclick="resetAll()">초기화</button>
+  </div>
+
+  <!-- ── 결과 카드 ── -->
+  <div class="section-card">
+    <div class="result-header">
+      <div class="section-title" style="margin-bottom:0;">뽑기 결과</div>
+      <span class="queue-badge" id="queueBadge" style="display:none;"></span>
+    </div>
+    <div id="resultPlaceholder" class="hint">버튼을 눌러 뽑기를 시작하세요!</div>
+    <div id="resultGrid" style="display:none;"></div>
+  </div>
+
+  <!-- ── 통계 패널 ── -->
+  <div class="section-card" id="statsPanel" style="display:none;">
+
+    <!-- 경험적 확률 -->
+    <div class="section-title">경험적 확률 — 실제 뽑기 결과</div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">총 뽑기 횟수 (n)</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">전설의 성검 획득 (X)</div>
+        <div class="stat-value" id="statLegCount">0</div>
+        <div class="stat-sub" id="statLegRate">실제 획득률 0%</div>
+      </div>
+    </div>
+
+    <!-- 이항분포 확률분포표 -->
+    <div class="section-title" style="margin-top:0.4rem;">이항분포 확률분포표 — B(n, p)</div>
+    <div class="dist-box">
+      <div class="dist-title">📋 P(X = k) 공식 형태</div>
+      <div class="dist-formula-bar">
+        P(X = k) = <span class="hb">₍ₙCₖ₎</span> · <span class="hl">p</span><sup>k</sup> · <span class="hp">(1−p)</span><sup>n−k</sup>
+        &nbsp;&nbsp;(k = 0, 1, 2, …, n)
+      </div>
+      <div id="distTableWrap"></div>
+    </div>
+
+    <!-- 확률분포 그래프 -->
+    <div class="section-title" style="margin-top:0.4rem;">확률 분포 그래프 — 이론값</div>
+    <div id="chartSection">
+      <p style="color:#bbb;font-size:0.85rem;">뽑기 후 그래프가 표시됩니다.</p>
+    </div>
+
+    <!-- 정규분포 근사 -->
+    <div class="normal-box" id="normalBox">
+      <div class="normal-title">📈 이항분포와 정규분포의 관계</div>
+      <div class="normal-formula">
+        n이 충분히 크면 &nbsp; B(n, p) <span class="hn">≈</span> N(<span class="hv">np</span>, <span class="hv">np(1−p)</span>)
+      </div>
+      <div class="normal-vals">
+        <div class="normal-val-box">
+          <div class="normal-val-label">평균 μ = np</div>
+          <div class="normal-val-num" id="normMu">—</div>
+        </div>
+        <div class="normal-val-box">
+          <div class="normal-val-label">분산 σ² = np(1−p)</div>
+          <div class="normal-val-num" id="normVar">—</div>
+        </div>
+        <div class="normal-val-box">
+          <div class="normal-val-label">표준편차 σ</div>
+          <div class="normal-val-num" id="normSd">—</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:6px;">
+        <div class="mini-axis" style="text-align:left; margin-bottom:3px; color:#4a8a4a; font-size:0.65rem;">
+          P(X=k) 히스토그램 (k = 0 ~ <span id="histMaxLabel">?</span>)
+        </div>
+        <div class="mini-hist" id="miniHist"></div>
+      </div>
+
+      <div class="normal-note" id="normalNote">
+        n이 커질수록 이항분포의 막대 모양이 종 모양(정규분포)에 가까워집니다.<br>
+        일반적으로 <strong>np ≥ 5</strong> 이고 <strong>n(1−p) ≥ 5</strong> 일 때 정규분포로 근사할 수 있습니다.
+      </div>
+    </div>
+
+  </div><!-- /statsPanel -->
+
+</div><!-- /main -->
+
+<script>
+  /* ── 상태 ── */
+  let totalPulls     = 0;
+  let legendaryCount = 0;
+  let legendaryP     = 0.01;  // 전설 확률
+  let epicP          = 0.04;  // 영웅 확률
+  const rareP        = 0.25;  // 희귀 (고정)
+  let cardQueue      = [];    // 현재 화면의 카드 목록 (최대 50개, 100회는 100개)
+
+  const GRADES = [
+    { key:'legendary', emoji:'⚔️', name:'전설의 성검', grade:'Legendary' },
+    { key:'epic',      emoji:'⚔️', name:'마력의 대검', grade:'Epic'      },
+    { key:'rare',      emoji:'🗡️', name:'강철 검',    grade:'Rare'      },
+    { key:'normal',    emoji:'🗡️', name:'낡은 검',    grade:'Normal'    },
+  ];
+
+  /* ── 확률 적용 ── */
+  function applyProb() {
+    const v = parseInt(document.getElementById('probInput').value, 10);
+    if (isNaN(v) || v < 1 || v > 50) return;
+    legendaryP = v / 100;
+
+    /* legendary > 20%면 epic을 먼저 줄이고, 나머지는 normal이 흡수 */
+    if (v <= 20) {
+      epicP = 0.04;
+    } else {
+      /* epic = max(0, 24-v)/100  →  v=20:4%, v=21:3%, v=24:0% */
+      epicP = Math.max(0, (24 - v) / 100);
+    }
+    const normalP = Math.max(0, 1 - legendaryP - epicP - rareP);
+
+    document.getElementById('pLegendary').textContent = v.toFixed(2) + '%';
+    document.getElementById('pEpic').textContent      = (epicP * 100).toFixed(2) + '%';
+    document.getElementById('pRare').textContent      = (rareP * 100).toFixed(2) + '%';
+    document.getElementById('pNormal').textContent    = (normalP * 100).toFixed(2) + '%';
+
+    if (totalPulls > 0) updateStats();
+  }
+
+  /* ── 단일 뽑기 ── */
+  function rollOne() {
+    const r = Math.random();
+    if (r < legendaryP)               return 'legendary';
+    if (r < legendaryP + epicP)       return 'epic';
+    if (r < legendaryP + epicP + rareP) return 'rare';
+    return 'normal';
+  }
+
+  /* ── 가챠 실행 ── */
+  function gacha(n) {
+    const results = [];
+    let gotLegendary = false;
+    for (let i = 0; i < n; i++) {
+      const g = rollOne();
+      results.push(g);
+      totalPulls++;
+      if (g === 'legendary') { legendaryCount++; gotLegendary = true; }
+    }
+
+    let isReset;
+    if (n === 100) {
+      /* 100회 뽑기: 100장 모두 새로 표시 */
+      cardQueue = results.slice();
+      isReset = true;
+    } else {
+      /* 1회/10회: 50개 초과 시 초기화 후 새 결과로 시작 */
+      if (cardQueue.length + n > 50) {
+        cardQueue = results.slice();
+        isReset = true;
+      } else {
+        cardQueue.push(...results);
+        isReset = false;
+      }
+    }
+
+    renderCards(isReset ? cardQueue.length : results.length);
+    updateStats();
+    if (gotLegendary) triggerLegendaryEffect();
+  }
+
+  /* ── 카드 렌더링 ── */
+  function renderCards(newCount) {
+    const grid = document.getElementById('resultGrid');
+    const ph   = document.getElementById('resultPlaceholder');
+    ph.style.display = 'none';
+    grid.style.display = 'grid';
+    grid.innerHTML = '';
+
+    const startNew = cardQueue.length - newCount;
+    cardQueue.forEach((key, i) => {
+      const info   = GRADES.find(g => g.key === key);
+      const isNew  = i >= startNew;
+      const card   = document.createElement('div');
+      card.className = 'sword-card ' + key + (isNew ? '' : ' settled');
+      if (isNew) {
+        card.style.animationDelay = Math.min((i - startNew) * 0.04, 1.2) + 's';
+      }
+      card.innerHTML =
+        `<div class="emoji">${info.emoji}</div>` +
+        `<div class="grade">${info.grade}</div>` +
+        `<div class="name">${info.name}</div>`;
+      grid.appendChild(card);
+    });
+
+    /* 뱃지 업데이트 */
+    const badge = document.getElementById('queueBadge');
+    badge.style.display = 'inline-block';
+    const cap = cardQueue.length === 100 ? 100 : 50;
+    badge.textContent = cardQueue.length + ' / ' + cap;
+  }
+
+  /* ── 통계 및 수식 업데이트 ── */
+  function updateStats() {
+    document.getElementById('statsPanel').style.display = 'block';
+
+    /* 경험적 확률 */
+    document.getElementById('statTotal').textContent    = totalPulls.toLocaleString();
+    document.getElementById('statLegCount').textContent = legendaryCount.toLocaleString();
+    const rate = totalPulls > 0 ? (legendaryCount / totalPulls * 100).toFixed(2) : '0.00';
+    document.getElementById('statLegRate').textContent  = '실제 획득률 ' + rate + '%';
+
+    const n = totalPulls;
+    const p = legendaryP;
+
+    renderDistTable(n, p);
+    renderChart(n, p);
+    renderNormalApprox(n, p);
+  }
+
+  /* ── 이항계수 계산 (log 방식) ── */
+  function binomProb(n, k, p) {
+    if (k < 0 || k > n) return 0;
+    if (p <= 0) return k === 0 ? 1 : 0;
+    if (p >= 1) return k === n ? 1 : 0;
+    let logC = 0;
+    const m = Math.min(k, n - k);
+    for (let i = 0; i < m; i++) logC += Math.log(n - i) - Math.log(i + 1);
+    return Math.exp(logC + k * Math.log(p) + (n - k) * Math.log(1 - p));
+  }
+
+  /* ── 확률분포표 렌더링 ── */
+  function renderDistTable(n, p) {
+    const wrap = document.getElementById('distTableWrap');
+    if (n === 0) { wrap.innerHTML = '<p style="color:#bbb;font-size:0.82rem;padding:6px 0;">뽑기 후 분포표가 표시됩니다.</p>'; return; }
+
+    const pStr = p.toFixed(4);
+    const qStr = (1 - p).toFixed(4);
+
+    /* 표시할 k 목록 */
+    let rows;
+    if (n <= 6) {
+      rows = Array.from({length: n + 1}, (_, i) => i);
+    } else {
+      rows = [0, 1, 2, null, n - 2, n - 1, n]; // null = 생략 행
+    }
+
+    const html = `
+      <table class="dist-table">
+        <thead>
+          <tr>
+            <th>k (전설 수)</th>
+            <th>P(X = k)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows.map(k => {
+            if (k === null) {
+              return `<tr class="ellipsis"><td class="k-col">⋮</td><td>⋮</td></tr>`;
+            }
+            return `<tr>
+              <td class="k-col">${k}</td>
+              <td>${formulaHtml(n, k, pStr, qStr)}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`;
+    wrap.innerHTML = html;
+  }
+
+  function formulaHtml(n, k, pStr, qStr) {
+    /* C(n,k) 부분 */
+    let cPart;
+    if (k === 0 || k === n) {
+      cPart = `<span class="coeff">1</span>`;
+    } else if (k === 1 || k === n - 1) {
+      cPart = `<span class="coeff"><sub>${n}</sub>C<sub>${k}</sub> = ${n}</span>`;
+    } else {
+      cPart = `<span class="coeff"><sub>${n}</sub>C<sub>${k}</sub></span>`;
+    }
+
+    /* p^k 부분 */
+    const pPart = `<span class="p-part">(${pStr})<sup>${k}</sup></span>`;
+
+    /* (1-p)^(n-k) 부분 */
+    const nk = n - k;
+    const qPart = `<span class="q-part">(${qStr})<sup>${nk}</sup></span>`;
+
+    return `${cPart} × ${pPart} × ${qPart}`;
+  }
+
+  /* ── 확률분포 막대 그래프 ── */
+  function renderChart(n, p) {
+    const section = document.getElementById('chartSection');
+    if (n === 0) { section.innerHTML = '<p style="color:#bbb;font-size:0.85rem;">뽑기 후 그래프가 표시됩니다.</p>'; return; }
+
+    const p0  = binomProb(n, 0, p);
+    const p1  = binomProb(n, 1, p);
+    const p2  = binomProb(n, 2, p);
+    const p3p = Math.max(0, 1 - p0 - p1 - p2);
+
+    const bars = [
+      { label: '전설 0개',   pct: p0,  cls: 'bar-0'  },
+      { label: '전설 1개',   pct: p1,  cls: 'bar-1'  },
+      { label: '전설 2개',   pct: p2,  cls: 'bar-2'  },
+      { label: '전설 3개↑',  pct: p3p, cls: 'bar-3p' },
+    ];
+    const maxPct = Math.max(...bars.map(b => b.pct), 0.001);
+
+    section.innerHTML = bars.map(b => {
+      const w = (b.pct / maxPct * 100).toFixed(1);
+      const s = (b.pct * 100).toFixed(3) + '%';
+      return `<div class="chart-row">
+        <div class="chart-label">${b.label}</div>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar ${b.cls}" style="width:${w}%">${s}</div>
+        </div>
+        <div class="chart-pct">${s}</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ── 정규분포 근사 ── */
+  function renderNormalApprox(n, p) {
+    const q   = 1 - p;
+    const mu  = n * p;
+    const va  = n * p * q;
+    const sd  = Math.sqrt(va);
+
+    document.getElementById('normMu').textContent  = mu.toFixed(3);
+    document.getElementById('normVar').textContent = va.toFixed(3);
+    document.getElementById('normSd').textContent  = sd.toFixed(3);
+
+    /* 근사 가능 여부 표시 */
+    const canApprox = mu >= 5 && n * q >= 5;
+    const note = document.getElementById('normalNote');
+    if (canApprox) {
+      note.style.background = '#d8f0d8';
+      note.innerHTML = `✅ 현재 np = <strong>${mu.toFixed(2)}</strong>, n(1−p) = <strong>${(n*q).toFixed(2)}</strong> 이므로<br>
+        <strong>B(${n}, ${p.toFixed(4)}) ≈ N(${mu.toFixed(3)}, ${va.toFixed(3)})</strong> 로 근사할 수 있습니다.<br>
+        <span style="font-size:0.76rem;color:#3a6a3a;">일반적으로 np ≥ 5이고 n(1−p) ≥ 5일 때 정규분포 근사를 적용합니다.</span>`;
+    } else {
+      note.style.background = '#eafaea';
+      note.innerHTML = `⏳ 현재 np = <strong>${mu.toFixed(2)}</strong>, n(1−p) = <strong>${(n*q).toFixed(2)}</strong><br>
+        n이 더 커질수록 이항분포의 막대 모양이 종 모양(정규분포)에 가까워집니다.<br>
+        <span style="font-size:0.76rem;color:#4a7a4a;">np ≥ 5이고 n(1−p) ≥ 5가 되면 정규분포로 근사할 수 있습니다.</span>`;
+    }
+
+    /* 미니 히스토그램 (k=0 ~ min(30, n)) */
+    const histMax = Math.min(30, n);
+    document.getElementById('histMaxLabel').textContent = histMax;
+    const probs = [];
+    for (let k = 0; k <= histMax; k++) probs.push(binomProb(n, k, p));
+    const maxP = Math.max(...probs, 0.0001);
+    const peak = probs.indexOf(maxP);
+
+    const hist = document.getElementById('miniHist');
+    hist.innerHTML = probs.map((pr, k) => {
+      const h = Math.max(2, Math.round((pr / maxP) * 50));
+      return `<div class="mini-bar${k === peak ? ' peak' : ''}" style="height:${h}px;" title="k=${k}: ${(pr*100).toFixed(3)}%"></div>`;
+    }).join('');
+  }
+
+  /* ── 전설 연출 ── */
+  function triggerLegendaryEffect() {
+    const flash  = document.getElementById('legendaryFlash');
+    const banner = document.getElementById('legendaryBanner');
+    flash.classList.remove('flash');
+    void flash.offsetWidth;
+    flash.classList.add('flash');
+    banner.classList.remove('show', 'hide');
+    banner.style.display = 'block';
+    void banner.offsetWidth;
+    banner.classList.add('show');
+    clearTimeout(banner._timer);
+    banner._timer = setTimeout(() => {
+      banner.classList.add('hide');
+      setTimeout(() => { banner.style.display = 'none'; banner.classList.remove('show', 'hide'); }, 380);
+    }, 2600);
+  }
+
+  /* ── 초기화 ── */
+  function resetAll() {
+    totalPulls = legendaryCount = 0;
+    cardQueue = [];
+    document.getElementById('resultGrid').innerHTML = '';
+    document.getElementById('resultGrid').style.display = 'none';
+    document.getElementById('resultPlaceholder').style.display = 'block';
+    document.getElementById('queueBadge').style.display = 'none';
+    document.getElementById('statsPanel').style.display = 'none';
+  }
+
+  /* 초기 실행 */
+  applyProb();
+</script>
+</body>
+</html>
