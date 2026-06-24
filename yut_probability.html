@@ -128,11 +128,7 @@
     .tool-card.sel   { border-color: var(--accent); background: var(--blue); }
     .t-icons { display: flex; gap: 3px; justify-content: center; align-items: center; }
     .coin-ico { font-size: 1.3rem; line-height: 1; }
-    .yut-ico {
-      width: 26px; height: 9px;
-      background: linear-gradient(to bottom, #c89040, #8b6014);
-      border-radius: 50%; border: 1.5px solid #6b5014; display: inline-block;
-    }
+    .yut-ico { display: inline-block; vertical-align: middle; }
     .t-lbl { font-size: 0.68rem; font-weight: 600; color: var(--gray); }
 
     .dir-row { display: flex; gap: 0.5rem; }
@@ -231,12 +227,7 @@
     @keyframes popIn { from { transform: scale(0.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .throw-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
     .throw-ico { font-size: 2.8rem; line-height: 1; animation: toss 0.55s ease; }
-    .yut-ico-lg {
-      width: 48px; height: 17px;
-      background: linear-gradient(to bottom, #c89040, #8b6014);
-      border-radius: 50%; border: 2px solid #6b5014;
-      animation: toss 0.55s ease;
-    }
+    .yut-ico-lg { display: inline-block; animation: toss 0.55s ease; }
     @keyframes toss {
       0%,100% { transform: rotate(0deg) translateY(0); }
       20% { transform: rotate(-22deg) translateY(-8px); }
@@ -334,8 +325,9 @@
   <polygon points="10,1 12,7 19,7 13,11 15,18 10,14 5,18 7,11 1,7 8,7" fill="#a8c4e8" opacity="0.7"/>
 </svg>
 <!-- 윷 막대 -->
-<svg class="deco deco-3" width="48" height="18" viewBox="0 0 48 18">
-  <ellipse cx="24" cy="9" rx="22" ry="7" fill="#c89040" opacity="0.22" stroke="#8b6014" stroke-width="1.3"/>
+<svg class="deco deco-3" width="50" height="22" viewBox="0 0 54 22" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 1,3 L 53,3 Q 27,22 1,3 Z" fill="#c89040" opacity="0.22" stroke="#8b6014" stroke-width="1.3"/>
+  <line x1="1" y1="3" x2="53" y2="3" stroke="#e8c060" opacity="0.3" stroke-width="1.8" stroke-linecap="round"/>
 </svg>
 <!-- 작은 원 -->
 <svg class="deco deco-4" width="14" height="14" viewBox="0 0 14 14">
@@ -355,8 +347,9 @@
   <rect x="4" y="4" width="12" height="12" rx="3" fill="#c5d8f0" opacity="0.7" transform="rotate(20 10 10)"/>
 </svg>
 <!-- 윷 막대 작은 -->
-<svg class="deco deco-8" width="38" height="14" viewBox="0 0 38 14">
-  <ellipse cx="19" cy="7" rx="17" ry="5.5" fill="#c89040" opacity="0.2" stroke="#8b6014" stroke-width="1.2"/>
+<svg class="deco deco-8" width="40" height="16" viewBox="0 0 44 17" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 1,3 L 43,3 Q 22,17 1,3 Z" fill="#c89040" opacity="0.2" stroke="#8b6014" stroke-width="1.2"/>
+  <line x1="1" y1="3" x2="43" y2="3" stroke="#e8c060" opacity="0.25" stroke-width="1.5" stroke-linecap="round"/>
 </svg>
 <!-- 마름모 -->
 <svg class="deco deco-9" width="16" height="16" viewBox="0 0 16 16">
@@ -426,11 +419,17 @@
               <div class="t-lbl">동전 × 2</div>
             </div>
             <div class="tool-card" data-tool="yy" onclick="pickTool('yy')">
-              <div class="t-icons"><span class="yut-ico"></span><span class="yut-ico"></span></div>
+              <div class="t-icons">
+                <svg width="28" height="13" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
+                <svg width="28" height="13" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
               <div class="t-lbl">윷 × 2</div>
             </div>
             <div class="tool-card" data-tool="cy" onclick="pickTool('cy')">
-              <div class="t-icons"><span class="coin-ico">🪙</span><span class="yut-ico"></span></div>
+              <div class="t-icons">
+                <span class="coin-ico">🪙</span>
+                <svg width="28" height="13" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
+              </div>
               <div class="t-lbl">동전 + 윷</div>
             </div>
           </div>
@@ -490,7 +489,7 @@
 
         <div class="stat-block">
           <div class="stat-head">
-            <span class="yut-ico" style="width:18px;height:7px;"></span>
+            <svg width="20" height="9" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
             <span class="stat-tool-name" style="margin-left:5px;">윷</span>
             <span class="stat-cnt" id="yutTot">총 0회</span>
           </div>
@@ -736,7 +735,7 @@
       <div class="throw-item">
         ${r.type === 'coin'
           ? '<div class="throw-ico">🪙</div>'
-          : '<div class="yut-ico-lg"></div>'}
+          : '<svg width="50" height="20" viewBox="0 0 54 22" xmlns="http://www.w3.org/2000/svg" class="yut-ico-lg"><path d="M 1,3 L 53,3 Q 27,22 1,3 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.8"/><line x1="1" y1="3" x2="53" y2="3" stroke="#e8c060" stroke-width="2.5" stroke-linecap="round"/></svg>'}
         <div class="throw-face ${r.result}">${face[r.result]}</div>
       </div>`).join('');
 
