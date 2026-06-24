@@ -618,13 +618,37 @@
       if (d.total != null) document.getElementById('totalCount').textContent = d.total.toLocaleString();
     }
 
-    const action = sessionStorage.getItem('visited') ? 'count' : 'visit';
-    if (action === 'visit') sessionStorage.setItem('visited', '1');
+    (function() {
+      // 한국 날짜 기준 오늘 (YYYY-MM-DD)
+      const today = new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date());
 
-    fetch(SCRIPT_URL + '?action=' + action)
-      .then(r => r.json())
-      .then(updateCounterDisplay)
-      .catch(() => {});
+      // 이 브라우저의 고유 방문자 ID (첫 방문 시 생성, 이후 영구 보관)
+      let uid = localStorage.getItem('visitor_uid');
+      const isFirstEver = !uid;
+      if (isFirstEver) {
+        uid = (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36));
+        localStorage.setItem('visitor_uid', uid);
+      }
+
+      const lastDate = localStorage.getItem('last_visit_date');
+      const isNewToday = lastDate !== today;
+
+      if (isNewToday) {
+        // 오늘 첫 방문 → 카운트 증가 요청
+        localStorage.setItem('last_visit_date', today);
+        const qs = '?action=visit&newTotal=' + (isFirstEver ? '1' : '0');
+        fetch(SCRIPT_URL + qs)
+          .then(r => r.json())
+          .then(updateCounterDisplay)
+          .catch(() => {});
+      } else {
+        // 오늘 이미 카운트된 재방문 → 숫자만 조회
+        fetch(SCRIPT_URL + '?action=count')
+          .then(r => r.json())
+          .then(updateCounterDisplay)
+          .catch(() => {});
+      }
+    })();
 
     function handleInquiry() {
       const email = document.getElementById('emailInput').value.trim();
