@@ -546,6 +546,8 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbziBSz8HMOhG3FR63PaQ7Yzu8PRlpr7q_NhNf4qynxpWyt5kx7z3aesLEPzPWhM3AiuNQ/exec';
+
     function handleInquiry() {
       const email = document.getElementById('emailInput').value.trim();
       const message = document.getElementById('messageInput').value.trim();
@@ -559,12 +561,27 @@
         return;
       }
 
-      const subject = encodeURIComponent('[수학 콘텐츠 문의] ' + email);
-      const body = encodeURIComponent('보내는 이: ' + email + '\n\n' + message);
-      window.location.href = 'mailto:jongyup37@gmail.com?subject=' + subject + '&body=' + body;
+      const btn = document.querySelector('.btn-modal-send');
+      btn.disabled = true;
+      btn.textContent = '전송 중...';
 
-      closeModal();
-      showToast('이메일 앱이 열립니다. 전송해 주세요.');
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, message })
+      })
+      .then(() => {
+        closeModal();
+        showToast('문의가 접수되었습니다. 감사합니다!');
+      })
+      .catch(() => {
+        showToast('전송 중 오류가 발생했습니다. 다시 시도해 주세요.');
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = '보내기';
+      });
     }
   </script>
 </body>
