@@ -297,10 +297,75 @@
       .game-wrap { grid-template-columns: 1fr; }
       .side-col { position: static; }
       nav { padding: 1rem 1.2rem; }
+      .deco-1, .deco-2, .deco-5, .deco-8 { display: none; }
     }
+
+    /* ── BACKGROUND DECOS ── */
+    .deco {
+      position: fixed; pointer-events: none; z-index: 0;
+      animation: float 4s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50%       { transform: translateY(-14px) rotate(8deg); }
+    }
+    .deco-1  { top: 10%; left:  3%;  animation-delay: 0s;    animation-duration: 4.2s; }
+    .deco-2  { top:  6%; left: 16%;  animation-delay: 0.7s;  animation-duration: 3.8s; }
+    .deco-3  { top: 14%; right: 5%;  animation-delay: 1.3s;  animation-duration: 4.5s; }
+    .deco-4  { top:  5%; right:18%;  animation-delay: 0.4s;  animation-duration: 3.6s; }
+    .deco-5  { top: 48%; left:  2%;  animation-delay: 2.0s;  animation-duration: 4.8s; }
+    .deco-6  { top: 52%; right: 3%;  animation-delay: 1.0s;  animation-duration: 4.1s; }
+    .deco-7  { top: 78%; left:  6%;  animation-delay: 0.5s;  animation-duration: 3.9s; }
+    .deco-8  { top: 82%; right: 7%;  animation-delay: 1.6s;  animation-duration: 4.4s; }
+    .deco-9  { top: 30%; left:  1%;  animation-delay: 2.4s;  animation-duration: 5.0s; }
+    .deco-10 { top: 65%; right: 2%;  animation-delay: 0.2s;  animation-duration: 3.7s; }
   </style>
 </head>
 <body>
+
+<!-- 떠다니는 배경 장식 -->
+<!-- 동전 큰 원 -->
+<svg class="deco deco-1" width="30" height="30" viewBox="0 0 30 30">
+  <circle cx="15" cy="15" r="13" fill="#f0c840" opacity="0.25" stroke="#c8a020" stroke-width="1.5"/>
+  <text x="15" y="20" text-anchor="middle" font-size="11" font-weight="900" fill="#c8a020" opacity="0.35" font-family="Inter,sans-serif">₩</text>
+</svg>
+<!-- 별 -->
+<svg class="deco deco-2" width="20" height="20" viewBox="0 0 20 20">
+  <polygon points="10,1 12,7 19,7 13,11 15,18 10,14 5,18 7,11 1,7 8,7" fill="#a8c4e8" opacity="0.7"/>
+</svg>
+<!-- 윷 막대 -->
+<svg class="deco deco-3" width="48" height="18" viewBox="0 0 48 18">
+  <ellipse cx="24" cy="9" rx="22" ry="7" fill="#c89040" opacity="0.22" stroke="#8b6014" stroke-width="1.3"/>
+</svg>
+<!-- 작은 원 -->
+<svg class="deco deco-4" width="14" height="14" viewBox="0 0 14 14">
+  <circle cx="7" cy="7" r="7" fill="#8ab4d8" opacity="0.6"/>
+</svg>
+<!-- 별 큰 -->
+<svg class="deco deco-5" width="26" height="26" viewBox="0 0 26 26">
+  <polygon points="13,2 16,9 23,9 17,14 19,22 13,17 7,22 9,14 3,9 10,9" fill="#c5d8f0" opacity="0.85"/>
+</svg>
+<!-- 동전 작은 -->
+<svg class="deco deco-6" width="22" height="22" viewBox="0 0 22 22">
+  <circle cx="11" cy="11" r="9" fill="#f0c840" opacity="0.2" stroke="#c8a020" stroke-width="1.5"/>
+  <text x="11" y="15" text-anchor="middle" font-size="9" font-weight="900" fill="#c8a020" opacity="0.3" font-family="Inter,sans-serif">₩</text>
+</svg>
+<!-- 둥근 사각형 -->
+<svg class="deco deco-7" width="20" height="20" viewBox="0 0 20 20">
+  <rect x="4" y="4" width="12" height="12" rx="3" fill="#c5d8f0" opacity="0.7" transform="rotate(20 10 10)"/>
+</svg>
+<!-- 윷 막대 작은 -->
+<svg class="deco deco-8" width="38" height="14" viewBox="0 0 38 14">
+  <ellipse cx="19" cy="7" rx="17" ry="5.5" fill="#c89040" opacity="0.2" stroke="#8b6014" stroke-width="1.2"/>
+</svg>
+<!-- 마름모 -->
+<svg class="deco deco-9" width="16" height="16" viewBox="0 0 16 16">
+  <polygon points="8,1 15,8 8,15 1,8" fill="#a8c4e8" opacity="0.6"/>
+</svg>
+<!-- 별 소 -->
+<svg class="deco deco-10" width="16" height="16" viewBox="0 0 16 16">
+  <polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" fill="#c5d8f0" opacity="0.8"/>
+</svg>
 
 <nav>
   <a href="index.html" class="nav-logo">∑ 재미있는 수학 콘텐츠</a>
