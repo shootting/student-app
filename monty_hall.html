@@ -941,8 +941,8 @@
       document.getElementById('stayBarPct').textContent   = stayPctNum   !== null ? stayBarW   + '%' : '0%';
       document.getElementById('switchBarPct').textContent = switchPctNum !== null ? switchBarW + '%' : '0%';
 
-      // Show bulk options inside decision panel after 10+ games
-      if (total >= 2) {
+      // Show bulk options inside decision panel after 5+ games
+      if (total > 5) {
         const opts = document.getElementById('bulkOptions');
         if (opts.style.display !== 'flex') {
           opts.style.display = 'flex';
