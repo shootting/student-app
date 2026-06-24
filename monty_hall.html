@@ -237,6 +237,12 @@
     }
     .btn-bulk-switch:hover { opacity: 0.85; transform: translateY(-2px); }
 
+    @keyframes bulkFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .bulk-panel.appear { animation: bulkFadeIn 0.45s ease; }
+
     /* ── STATISTICS ── */
     .stats-section {
       max-width: 820px; margin: 0 auto; padding: 0 2rem 4rem;
@@ -837,9 +843,13 @@
       document.getElementById('stayBarPct').textContent   = stayPctNum   !== null ? stayBarW   + '%' : '0%';
       document.getElementById('switchBarPct').textContent = switchPctNum !== null ? switchBarW + '%' : '0%';
 
-      // Show bulk buttons after 2+ games
-      if (total >= 2) {
-        document.getElementById('bulkPanel').style.display = 'flex';
+      // Show bulk buttons after 10+ games
+      if (total >= 10) {
+        const panel = document.getElementById('bulkPanel');
+        if (panel.style.display !== 'flex') {
+          panel.style.display = 'flex';
+          panel.classList.add('appear');
+        }
       }
 
       // Show hint after 20+ games
