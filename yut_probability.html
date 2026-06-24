@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>확률 윷놀이 — 재미있는 수학 콘텐츠</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #111111; --gray: #666666; --bg: #fafafa;
+      --blue: #c5d8f0; --accent: #4a7aaa;
+      --p0: #e05050; --p1: #4a7aaa; --p2: #3aaa70; --p3: #9050c8;
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--black); min-height: 100vh; }
+
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 2.5rem; border-bottom: 1px solid #e8e8e8;
+      background: var(--bg); position: sticky; top: 0; z-index: 100;
+    }
+    .nav-logo { font-size: 1rem; font-weight: 700; text-decoration: none; color: var(--black); }
+    .btn-nav {
+      font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600;
+      padding: 0.45rem 1rem; border: 1.5px solid var(--black); border-radius: 999px;
+      background: transparent; cursor: pointer; text-decoration: none; color: var(--black);
+      transition: background 0.2s, color 0.2s;
+    }
+    .btn-nav:hover { background: var(--black); color: #fff; }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── SETUP ── */
+    .setup-wrap { max-width: 500px; margin: 3.5rem auto; padding: 0 1.5rem; }
+    .setup-card {
+      background: #fff; border-radius: 24px; padding: 2.4rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .setup-card h1 { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.4rem; }
+    .setup-card > p { font-size: 0.88rem; color: var(--gray); line-height: 1.75; margin-bottom: 1.8rem; }
+    .field-label { font-size: 0.7rem; font-weight: 700; color: var(--gray); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.55rem; }
+    .count-row { display: flex; gap: 0.55rem; margin-bottom: 1.8rem; }
+    .count-btn {
+      flex: 1; padding: 0.7rem; border: 2px solid #e0e0e0; border-radius: 12px;
+      background: #fff; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s;
+    }
+    .count-btn.sel { border-color: var(--accent); background: var(--blue); color: var(--accent); }
+    .name-list { display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1.8rem; }
+    .name-row { display: flex; align-items: center; gap: 0.7rem; }
+    .p-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+    .name-input {
+      flex: 1; border: 1.5px solid #e0e0e0; border-radius: 10px;
+      padding: 0.6rem 0.85rem; font-family: 'Inter', sans-serif; font-size: 0.88rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .name-input:focus { border-color: var(--accent); }
+    .btn-primary {
+      width: 100%; padding: 0.95rem; background: var(--black); color: #fff;
+      border: none; border-radius: 14px; font-family: 'Inter', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* ── GAME LAYOUT ── */
+    .game-wrap {
+      display: grid; grid-template-columns: 1fr 300px;
+      gap: 1.4rem; max-width: 1080px; margin: 0 auto; padding: 1.8rem 1.5rem;
+    }
+    .board-col { display: flex; flex-direction: column; gap: 1rem; }
+
+    /* Turn banner */
+    .turn-banner {
+      background: #fff; border-radius: 14px; padding: 0.9rem 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex; align-items: center; gap: 0.75rem;
+    }
+    .turn-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+    .turn-banner h2 { font-size: 1rem; font-weight: 800; }
+    .turn-banner small { font-size: 0.78rem; color: var(--gray); display: block; margin-top: 1px; }
+
+    /* Board */
+    .board-card {
+      background: #fff; border-radius: 20px; padding: 1.4rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      display: flex; justify-content: center;
+    }
+    #board { position: relative; width: 280px; height: 280px; flex-shrink: 0; }
+    .b-space {
+      position: absolute; width: 42px; height: 42px; border-radius: 50%;
+      background: #f0f5fb; border: 2px solid #cce0f0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .b-space.go { background: #fffbe8; border-color: #f0c840; }
+    .b-space.finish { background: #eaf8ec; border-color: #60c070; }
+    .b-num { font-size: 0.6rem; font-weight: 800; color: #999; }
+    .b-space.go    .b-num { color: #b08020; font-size: 0.55rem; }
+    .b-space.finish .b-num { color: #2a8a3a; font-size: 0.55rem; }
+    .board-label {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-size: 0.72rem; font-weight: 700; color: #ccc; text-align: center; line-height: 1.55;
+      pointer-events: none;
+    }
+    .p-token {
+      position: absolute; width: 13px; height: 13px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.9);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25); z-index: 10;
+      transition: left 0.45s ease, top 0.45s ease;
+    }
+
+    /* Controls */
+    .ctrl-card {
+      background: #fff; border-radius: 20px; padding: 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      display: flex; flex-direction: column; gap: 0.9rem;
+    }
+    .ctrl-label { font-size: 0.68rem; font-weight: 700; color: var(--gray); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .tool-row { display: flex; gap: 0.5rem; }
+    .tool-card {
+      flex: 1; padding: 0.7rem 0.3rem; border: 2px solid #e8e8e8; border-radius: 12px;
+      background: #fff; cursor: pointer; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+      transition: border-color 0.18s, background 0.18s;
+    }
+    .tool-card:hover { border-color: var(--accent); background: #f5f9ff; }
+    .tool-card.sel   { border-color: var(--accent); background: var(--blue); }
+    .t-icons { display: flex; gap: 3px; justify-content: center; align-items: center; }
+    .coin-ico { font-size: 1.3rem; line-height: 1; }
+    .yut-ico {
+      width: 26px; height: 9px;
+      background: linear-gradient(to bottom, #c89040, #8b6014);
+      border-radius: 50%; border: 1.5px solid #6b5014; display: inline-block;
+    }
+    .t-lbl { font-size: 0.68rem; font-weight: 600; color: var(--gray); }
+
+    .dir-row { display: flex; gap: 0.5rem; }
+    .dir-btn {
+      flex: 1; padding: 0.65rem 0.3rem; border: 2px solid #e8e8e8; border-radius: 10px;
+      background: #fff; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 700;
+      cursor: pointer; text-align: center; transition: border-color 0.18s, background 0.18s, color 0.18s;
+    }
+    .dir-btn:hover { border-color: var(--accent); background: #f5f9ff; }
+    .dir-btn.sel   { border-color: var(--accent); background: var(--blue); color: var(--accent); }
+
+    .btn-throw {
+      width: 100%; padding: 0.9rem; background: var(--black); color: #fff;
+      border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
+      font-size: 0.95rem; font-weight: 800; cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-throw:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+    .btn-throw:disabled { opacity: 0.38; cursor: default; transform: none; }
+
+    /* Result */
+    .result-card {
+      background: #f8fbff; border-radius: 12px; padding: 0.9rem 1rem;
+      border: 1.5px solid #ddeeff; min-height: 58px;
+      display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+    }
+    .r-chip {
+      display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+      padding: 0.4rem 0.7rem; border-radius: 8px; min-width: 54px; text-align: center;
+    }
+    .r-chip.front { background: #fffbe0; border: 1.5px solid #e8c030; }
+    .r-chip.back  { background: #edf4ff; border: 1.5px solid #90b8e0; }
+    .r-chip-type  { font-size: 0.62rem; font-weight: 600; color: var(--gray); }
+    .r-chip-face  { font-size: 0.85rem; font-weight: 800; }
+    .r-chip.front .r-chip-face { color: #9a7010; }
+    .r-chip.back  .r-chip-face { color: #3a6a9a; }
+    .r-move { font-size: 0.88rem; font-weight: 800; color: var(--black); }
+    .r-bonus { font-size: 0.8rem; font-weight: 700; color: #d03030; animation: blink 0.7s ease infinite alternate; }
+    @keyframes blink { from { opacity: 0.6; } to { opacity: 1; } }
+    .r-placeholder { font-size: 0.8rem; color: #bbb; }
+
+    .btn-next {
+      display: none; width: 100%; padding: 0.8rem; background: var(--accent); color: #fff;
+      border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-next:hover { opacity: 0.85; }
+    .btn-next.on { display: block; }
+
+    /* ── SIDEBAR ── */
+    .side-col { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 72px; align-self: start; }
+    .side-card {
+      background: #fff; border-radius: 18px; padding: 1.2rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+    .side-card h3 { font-size: 0.82rem; font-weight: 800; margin-bottom: 0.9rem; }
+
+    .p-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .p-row {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 0.7rem; border-radius: 9px; background: #f8f8f8;
+    }
+    .p-row.cur { background: var(--blue); }
+    .p-row-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .p-row-name { flex: 1; font-size: 0.8rem; font-weight: 700; }
+    .p-row-pos  { font-size: 0.75rem; color: var(--gray); font-weight: 600; }
+
+    .stat-block { margin-bottom: 1rem; }
+    .stat-block:last-child { margin-bottom: 0; }
+    .stat-head  { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.45rem; }
+    .stat-tool-name { font-size: 0.78rem; font-weight: 700; }
+    .stat-cnt  { font-size: 0.68rem; color: var(--gray); margin-left: auto; }
+    .stat-row  { margin-bottom: 0.35rem; }
+    .stat-rh   { display: flex; justify-content: space-between; margin-bottom: 0.18rem; }
+    .stat-rl   { font-size: 0.68rem; font-weight: 600; color: var(--gray); }
+    .stat-rv   { font-size: 0.68rem; font-weight: 700; }
+    .stat-track { background: #f0f0f0; border-radius: 999px; height: 5px; overflow: hidden; }
+    .stat-fill  { height: 100%; border-radius: 999px; transition: width 0.4s ease; width: 0%; }
+    .fill-front { background: #ddb830; }
+    .fill-back  { background: #88b0d8; }
+    .stat-divider { border: none; border-top: 1px solid #f0f0f0; margin: 0.8rem 0; }
+
+    /* ── THROW POPUP ── */
+    .throw-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.42); z-index: 500;
+      align-items: center; justify-content: center;
+    }
+    .throw-overlay.on { display: flex; }
+    .throw-popup {
+      background: #fff; border-radius: 22px; padding: 2rem 2.8rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.2);
+      display: flex; gap: 2rem; align-items: center;
+      animation: popIn 0.2s ease;
+    }
+    @keyframes popIn { from { transform: scale(0.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .throw-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+    .throw-ico { font-size: 2.8rem; line-height: 1; animation: toss 0.55s ease; }
+    .yut-ico-lg {
+      width: 48px; height: 17px;
+      background: linear-gradient(to bottom, #c89040, #8b6014);
+      border-radius: 50%; border: 2px solid #6b5014;
+      animation: toss 0.55s ease;
+    }
+    @keyframes toss {
+      0%,100% { transform: rotate(0deg) translateY(0); }
+      20% { transform: rotate(-22deg) translateY(-8px); }
+      40% { transform: rotate(18deg) translateY(-14px); }
+      60% { transform: rotate(-12deg) translateY(-6px); }
+      80% { transform: rotate(8deg) translateY(-2px); }
+    }
+    .throw-face {
+      font-size: 0.95rem; font-weight: 800; padding: 0.35rem 0.9rem; border-radius: 8px;
+    }
+    .throw-face.front { background: #fffbe0; color: #9a7010; }
+    .throw-face.back  { background: #edf4ff; color: #3a6a9a; }
+
+    /* ── GAME OVER ── */
+    .over-wrap { max-width: 540px; margin: 3.5rem auto; padding: 0 1.5rem; }
+    .over-card {
+      background: #fff; border-radius: 24px; padding: 2.4rem;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08); text-align: center;
+    }
+    .over-trophy { font-size: 3.5rem; margin-bottom: 0.8rem; }
+    .over-card h1 { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.5rem; }
+    .over-winner  { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.8rem; }
+    .over-stats {
+      background: #f8f8f8; border-radius: 16px; padding: 1.2rem; text-align: left; margin-bottom: 1.4rem;
+    }
+    .over-stats h3 { font-size: 0.72rem; font-weight: 800; color: var(--gray); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.9rem; }
+    .over-row { display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid #eee; font-size: 0.84rem; }
+    .over-row:last-child { border-bottom: none; }
+    .over-lbl { color: var(--gray); }
+    .over-val { font-weight: 700; }
+    .btn-sheets {
+      width: 100%; padding: 0.85rem; background: #2a7a38; color: #fff;
+      border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-bottom: 0.7rem;
+      transition: opacity 0.2s;
+    }
+    .btn-sheets:hover { opacity: 0.85; }
+    .btn-restart {
+      width: 100%; padding: 0.85rem; background: var(--black); color: #fff;
+      border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-restart:hover { opacity: 0.85; }
+
+    /* Toast */
+    #toast {
+      position: fixed; bottom: 2rem; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--black); color: #fff;
+      padding: 0.8rem 1.7rem; border-radius: 12px;
+      font-size: 0.88rem; font-weight: 500; opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      pointer-events: none; z-index: 999; white-space: nowrap;
+    }
+    #toast.on { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    @media (max-width: 780px) {
+      .game-wrap { grid-template-columns: 1fr; }
+      .side-col { position: static; }
+      nav { padding: 1rem 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">∑ 재미있는 수학 콘텐츠</a>
+  <a href="prob_stat.html" class="btn-nav">← 확률과 통계</a>
+</nav>
+
+<!-- ── SETUP ── -->
+<div id="screen-setup" class="screen active">
+  <div class="setup-wrap">
+    <div class="setup-card">
+      <h1>확률 윷놀이 🎲</h1>
+      <p>동전과 윷 중 어떤 도구의 앞면이 더 자주 나올까요?<br>
+         직접 던지며 패턴을 발견하고 전략적으로 전진하세요!</p>
+
+      <div class="field-label">플레이어 수</div>
+      <div class="count-row" id="countRow">
+        <button class="count-btn sel" data-n="2">2명</button>
+        <button class="count-btn"     data-n="3">3명</button>
+        <button class="count-btn"     data-n="4">4명</button>
+      </div>
+
+      <div class="field-label">플레이어 이름</div>
+      <div class="name-list" id="nameList"></div>
+
+      <button class="btn-primary" onclick="startGame()">게임 시작 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── GAME ── -->
+<div id="screen-game" class="screen">
+  <div class="game-wrap">
+
+    <div class="board-col">
+      <!-- Turn banner -->
+      <div class="turn-banner">
+        <div class="turn-dot" id="turnDot"></div>
+        <div>
+          <h2 id="turnName">—</h2>
+          <small id="turnHint">도구와 전진 방향을 선택하세요</small>
+        </div>
+      </div>
+
+      <!-- Board -->
+      <div class="board-card">
+        <div id="board">
+          <div class="board-label">확률<br>윷놀이</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="ctrl-card">
+        <div>
+          <div class="ctrl-label">던질 도구 선택</div>
+          <div class="tool-row">
+            <div class="tool-card" data-tool="cc" onclick="pickTool('cc')">
+              <div class="t-icons"><span class="coin-ico">🪙</span><span class="coin-ico">🪙</span></div>
+              <div class="t-lbl">동전 × 2</div>
+            </div>
+            <div class="tool-card" data-tool="yy" onclick="pickTool('yy')">
+              <div class="t-icons"><span class="yut-ico"></span><span class="yut-ico"></span></div>
+              <div class="t-lbl">윷 × 2</div>
+            </div>
+            <div class="tool-card" data-tool="cy" onclick="pickTool('cy')">
+              <div class="t-icons"><span class="coin-ico">🪙</span><span class="yut-ico"></span></div>
+              <div class="t-lbl">동전 + 윷</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="ctrl-label">전진 기준</div>
+          <div class="dir-row">
+            <button class="dir-btn" data-dir="front" onclick="pickDir('front')">앞면 개수만큼 전진</button>
+            <button class="dir-btn" data-dir="back"  onclick="pickDir('back')">뒷면 개수만큼 전진</button>
+          </div>
+        </div>
+
+        <button class="btn-throw" id="btnThrow" onclick="doThrow()" disabled>🎲 던지기</button>
+
+        <div class="result-card" id="resultCard">
+          <span class="r-placeholder">도구와 방향을 선택 후 던져보세요.</span>
+        </div>
+
+        <button class="btn-next" id="btnNext" onclick="nextTurn()">다음 플레이어 턴 →</button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="side-col">
+      <div class="side-card">
+        <h3>🎯 플레이어 현황</h3>
+        <div class="p-list" id="pList"></div>
+      </div>
+
+      <div class="side-card">
+        <h3>📊 누적 던지기 통계</h3>
+
+        <div class="stat-block">
+          <div class="stat-head">
+            <span class="coin-ico" style="font-size:1rem;">🪙</span>
+            <span class="stat-tool-name">동전</span>
+            <span class="stat-cnt" id="coinTot">총 0회</span>
+          </div>
+          <div class="stat-row">
+            <div class="stat-rh">
+              <span class="stat-rl">앞면</span>
+              <span class="stat-rv" id="coinFv">0회 (—)</span>
+            </div>
+            <div class="stat-track"><div class="stat-fill fill-front" id="coinFbar"></div></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-rh">
+              <span class="stat-rl">뒷면</span>
+              <span class="stat-rv" id="coinBv">0회 (—)</span>
+            </div>
+            <div class="stat-track"><div class="stat-fill fill-back" id="coinBbar"></div></div>
+          </div>
+        </div>
+
+        <hr class="stat-divider" />
+
+        <div class="stat-block">
+          <div class="stat-head">
+            <span class="yut-ico" style="width:18px;height:7px;"></span>
+            <span class="stat-tool-name" style="margin-left:5px;">윷</span>
+            <span class="stat-cnt" id="yutTot">총 0회</span>
+          </div>
+          <div class="stat-row">
+            <div class="stat-rh">
+              <span class="stat-rl">앞면 (평면)</span>
+              <span class="stat-rv" id="yutFv">0회 (—)</span>
+            </div>
+            <div class="stat-track"><div class="stat-fill fill-front" id="yutFbar"></div></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-rh">
+              <span class="stat-rl">뒷면 (둥근면)</span>
+              <span class="stat-rv" id="yutBv">0회 (—)</span>
+            </div>
+            <div class="stat-track"><div class="stat-fill fill-back" id="yutBbar"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GAME OVER ── -->
+<div id="screen-over" class="screen">
+  <div class="over-wrap">
+    <div class="over-card">
+      <div class="over-trophy">🏆</div>
+      <h1>게임 종료!</h1>
+      <div class="over-winner" id="overWinner"></div>
+      <div class="over-stats">
+        <h3>최종 통계 — 수학적 확률과 비교해 보세요</h3>
+        <div class="over-row"><span class="over-lbl">🪙 동전 앞면</span><span class="over-val" id="oCF">—</span></div>
+        <div class="over-row"><span class="over-lbl">🪙 동전 뒷면</span><span class="over-val" id="oCB">—</span></div>
+        <div class="over-row"><span class="over-lbl">윷 앞면 (평면)</span><span class="over-val" id="oYF">—</span></div>
+        <div class="over-row"><span class="over-lbl">윷 뒷면 (둥근면)</span><span class="over-val" id="oYB">—</span></div>
+      </div>
+      <button class="btn-sheets" onclick="saveToSheets()">📊 구글 시트에 기록하기</button>
+      <button class="btn-restart" onclick="goSetup()">🔄 다시 하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Throw popup -->
+<div class="throw-overlay" id="throwOverlay">
+  <div class="throw-popup" id="throwPopup"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  /* ── CONSTANTS (never shown in UI) ── */
+  const P = { coin: 0.5, yut: 0.4 };
+  const COLORS = ['#e05050','#4a7aaa','#3aaa70','#9050c8'];
+  const N = 10; // board spaces
+  const R = 108, CX = 140, CY = 140; // board geometry
+
+  /* ── STATE ── */
+  let G = {};
+
+  function initState(players) {
+    G = {
+      players,
+      cur: 0,
+      tool: null, dir: null,
+      stats: { coin: { t:0, f:0 }, yut: { t:0, f:0 } },
+      winner: null
+    };
+  }
+
+  /* ── SETUP ── */
+  let pCount = 2;
+
+  document.getElementById('countRow').addEventListener('click', e => {
+    const btn = e.target.closest('.count-btn');
+    if (!btn) return;
+    pCount = +btn.dataset.n;
+    document.querySelectorAll('.count-btn').forEach(b => b.classList.toggle('sel', b === btn));
+    buildNameInputs();
+  });
+
+  function buildNameInputs() {
+    const el = document.getElementById('nameList');
+    el.innerHTML = '';
+    for (let i = 0; i < pCount; i++) {
+      const row = document.createElement('div');
+      row.className = 'name-row';
+      row.innerHTML = `
+        <div class="p-dot" style="background:${COLORS[i]}"></div>
+        <input class="name-input" id="pn${i}" value="플레이어 ${i+1}" placeholder="플레이어 ${i+1}" />`;
+      el.appendChild(row);
+    }
+  }
+
+  function startGame() {
+    const players = Array.from({ length: pCount }, (_, i) => ({
+      name: (document.getElementById(`pn${i}`)?.value.trim() || `플레이어 ${i+1}`),
+      pos: 0,
+      color: COLORS[i]
+    }));
+    initState(players);
+    show('game');
+    buildBoard();
+    renderAll();
+    resetControls();
+  }
+
+  /* ── BOARD ── */
+  function buildBoard() {
+    const board = document.getElementById('board');
+    board.querySelectorAll('.b-space').forEach(el => el.remove());
+    for (let i = 0; i < N; i++) {
+      const a = Math.PI/2 - (i/N) * 2 * Math.PI;
+      const x = CX + R * Math.cos(a);
+      const y = CY + R * Math.sin(a);
+      const sp = document.createElement('div');
+      sp.className = 'b-space' + (i === 0 ? ' go' : '');
+      sp.id = `sp${i}`;
+      sp.style.cssText = `left:${x-21}px; top:${y-21}px;`;
+      sp.innerHTML = `<span class="b-num">${i === 0 ? '출발' : i}</span>`;
+      board.appendChild(sp);
+    }
+  }
+
+  function placeTokens() {
+    document.querySelectorAll('.p-token').forEach(t => t.remove());
+    const groups = {};
+    G.players.forEach((p, i) => {
+      const key = p.pos >= N ? 'done' : p.pos;
+      if (key !== 'done') (groups[key] = groups[key]||[]).push({ p, i });
+    });
+    const offs = [[-6,-6],[6,-6],[-6,6],[6,6],[0,0]];
+    Object.entries(groups).forEach(([pos, arr]) => {
+      const sp = document.getElementById(`sp${pos}`);
+      if (!sp) return;
+      arr.forEach(({ p, i }, nth) => {
+        const tk = document.createElement('div');
+        tk.className = 'p-token';
+        tk.id = `tk${i}`;
+        tk.style.background = p.color;
+        const [ox, oy] = offs[Math.min(nth, offs.length-1)];
+        tk.style.left = (21 - 6.5 + ox) + 'px';
+        tk.style.top  = (21 - 6.5 + oy) + 'px';
+        sp.appendChild(tk);
+      });
+    });
+  }
+
+  /* ── CONTROLS ── */
+  function pickTool(t) {
+    G.tool = t;
+    document.querySelectorAll('.tool-card').forEach(c => c.classList.toggle('sel', c.dataset.tool === t));
+    checkReady();
+  }
+  function pickDir(d) {
+    G.dir = d;
+    document.querySelectorAll('.dir-btn').forEach(b => b.classList.toggle('sel', b.dataset.dir === d));
+    checkReady();
+  }
+  function checkReady() {
+    document.getElementById('btnThrow').disabled = !(G.tool && G.dir);
+  }
+  function resetControls() {
+    G.tool = G.dir = null;
+    document.querySelectorAll('.tool-card, .dir-btn').forEach(el => el.classList.remove('sel'));
+    document.getElementById('btnThrow').disabled = true;
+    document.getElementById('btnNext').classList.remove('on');
+    document.getElementById('resultCard').innerHTML = '<span class="r-placeholder">도구와 방향을 선택 후 던져보세요.</span>';
+    document.getElementById('turnHint').textContent = '도구와 전진 방향을 선택하세요';
+  }
+
+  /* ── THROW ── */
+  const toolList = { cc:['coin','coin'], yy:['yut','yut'], cy:['coin','yut'] };
+
+  function throwOne(type) { return Math.random() < P[type] ? 'front' : 'back'; }
+
+  async function doThrow() {
+    document.getElementById('btnThrow').disabled = true;
+    document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.style.pointerEvents = 'none');
+
+    const tools   = toolList[G.tool];
+    const results = tools.map(t => ({ type: t, result: throwOne(t) }));
+
+    // accumulate stats
+    results.forEach(({ type, result }) => {
+      G.stats[type].t++;
+      if (result === 'front') G.stats[type].f++;
+    });
+
+    await showThrowAnim(results);
+
+    const match = results.filter(r => r.result === G.dir).length;
+    const bonus = match === 2;
+    const cp    = G.players[G.cur];
+
+    cp.pos = Math.min(cp.pos + match, N);
+
+    renderAll();
+
+    // Show result chips
+    const lbl  = { coin:'동전', yut:'윷' };
+    const face = { front:'앞면', back:'뒷면' };
+    let html = results.map(r =>
+      `<div class="r-chip ${r.result}">
+        <span class="r-chip-type">${lbl[r.type]}</span>
+        <span class="r-chip-face">${face[r.result]}</span>
+      </div>`).join('');
+    html += `<span class="r-move">${face[G.dir]} ${match}개 → <strong>${match}칸 전진</strong></span>`;
+    if (bonus) html += `<span class="r-bonus">🎉 한 번 더!</span>`;
+    document.getElementById('resultCard').innerHTML = html;
+
+    // Win check
+    if (cp.pos >= N) { setTimeout(() => endGame(), 600); return; }
+
+    if (bonus) {
+      document.getElementById('turnHint').textContent = '🎉 2칸 이동! 한 번 더 던지세요!';
+      document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.style.pointerEvents = '');
+      G.tool = G.dir = null;
+      document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.classList.remove('sel'));
+      document.getElementById('btnThrow').disabled = true;
+    } else {
+      document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.style.pointerEvents = '');
+      document.getElementById('btnNext').classList.add('on');
+    }
+  }
+
+  function nextTurn() {
+    G.cur = (G.cur + 1) % G.players.length;
+    resetControls();
+    renderAll();
+  }
+
+  /* ── THROW ANIMATION ── */
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  async function showThrowAnim(results) {
+    const overlay = document.getElementById('throwOverlay');
+    const popup   = document.getElementById('throwPopup');
+    const lbl     = { coin:'동전', yut:'윷' };
+    const face    = { front:'앞면', back:'뒷면' };
+
+    popup.innerHTML = results.map(r => `
+      <div class="throw-item">
+        ${r.type === 'coin'
+          ? '<div class="throw-ico">🪙</div>'
+          : '<div class="yut-ico-lg"></div>'}
+        <div class="throw-face ${r.result}">${face[r.result]}</div>
+      </div>`).join('');
+
+    overlay.classList.add('on');
+    await sleep(850);
+    overlay.classList.remove('on');
+  }
+
+  /* ── RENDER ── */
+  function renderAll() {
+    // Turn banner
+    const cp = G.players[G.cur];
+    document.getElementById('turnName').textContent = cp.name + '의 턴';
+    document.getElementById('turnDot').style.background = cp.color;
+
+    // Player list
+    document.getElementById('pList').innerHTML = G.players.map((p, i) => `
+      <div class="p-row ${i === G.cur ? 'cur' : ''}">
+        <div class="p-row-dot" style="background:${p.color}"></div>
+        <span class="p-row-name">${p.name}</span>
+        <span class="p-row-pos">${p.pos >= N ? '완주 🏆' : p.pos + '칸'}</span>
+      </div>`).join('');
+
+    placeTokens();
+    updateStats();
+  }
+
+  /* ── STATS ── */
+  function updateStats() {
+    const pct = (n, t) => t > 0 ? `${n}회 (${(n/t*100).toFixed(1)}%)` : '0회 (—)';
+    const bar = (n, t) => t > 0 ? (n/t*100).toFixed(1) : 0;
+
+    const { coin, yut } = G.stats;
+    const cb = coin.t - coin.f, yb = yut.t - yut.f;
+
+    document.getElementById('coinTot').textContent  = `총 ${coin.t}회`;
+    document.getElementById('coinFv').textContent   = pct(coin.f, coin.t);
+    document.getElementById('coinBv').textContent   = pct(cb, coin.t);
+    document.getElementById('coinFbar').style.width = bar(coin.f, coin.t) + '%';
+    document.getElementById('coinBbar').style.width = bar(cb, coin.t) + '%';
+
+    document.getElementById('yutTot').textContent  = `총 ${yut.t}회`;
+    document.getElementById('yutFv').textContent   = pct(yut.f, yut.t);
+    document.getElementById('yutBv').textContent   = pct(yb, yut.t);
+    document.getElementById('yutFbar').style.width = bar(yut.f, yut.t) + '%';
+    document.getElementById('yutBbar').style.width = bar(yb, yut.t) + '%';
+  }
+
+  /* ── GAME OVER ── */
+  function endGame() {
+    G.winner = G.cur;
+    const cp = G.players[G.cur];
+    const { coin, yut } = G.stats;
+    const cb = coin.t - coin.f, yb = yut.t - yut.f;
+    const pct = (n, t) => t > 0 ? `${n}회 (${(n/t*100).toFixed(1)}%)` : '0회';
+
+    document.getElementById('overWinner').innerHTML =
+      `<span style="color:${cp.color}">🎉 ${cp.name}</span> 우승!`;
+    document.getElementById('oCF').textContent = pct(coin.f, coin.t);
+    document.getElementById('oCB').textContent = pct(cb, coin.t);
+    document.getElementById('oYF').textContent = pct(yut.f, yut.t);
+    document.getElementById('oYB').textContent = pct(yb, yut.t);
+
+    show('over');
+  }
+
+  /* ── GOOGLE SHEETS ── */
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ24Cd_v_dFCORrRwnzp9OXeomowRL1D-wkXbKlDTs0QAm583KQiY-BUXx9l4fXpybTg/exec';
+
+  function saveToSheets() {
+    const { coin, yut } = G.stats;
+    const winner = G.players[G.winner];
+    fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'yut_game',
+        winner: winner.name,
+        playerCount: G.players.length,
+        coinTotal: coin.t, coinFront: coin.f, coinBack: coin.t - coin.f,
+        yutTotal:  yut.t, yutFront:  yut.f, yutBack:  yut.t - yut.f
+      })
+    })
+    .then(() => showToast('구글 시트에 기록되었습니다!'))
+    .catch(() => showToast('저장 중 오류가 발생했습니다.'));
+  }
+
+  /* ── UTILS ── */
+  function show(name) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + name).classList.add('active');
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('on');
+    setTimeout(() => t.classList.remove('on'), 2600);
+  }
+  function goSetup() { show('setup'); }
+
+  /* ── INIT ── */
+  buildNameInputs();
+</script>
+</body>
+</html>
