@@ -942,7 +942,7 @@
       document.getElementById('switchBarPct').textContent = switchPctNum !== null ? switchBarW + '%' : '0%';
 
       // Show bulk options inside decision panel after 10+ games
-      if (total >= 10) {
+      if (total >= 2) {
         const opts = document.getElementById('bulkOptions');
         if (opts.style.display !== 'flex') {
           opts.style.display = 'flex';
