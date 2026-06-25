@@ -403,6 +403,48 @@
       to   { width: 0%; }
     }
     .bonus-tap { font-size: 0.7rem; color: #ccc; margin-top: 0.5rem; }
+
+    /* ── SHORTCUT POPUP ── */
+    .sc-popup-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.58); z-index: 600;
+      align-items: center; justify-content: center;
+    }
+    .sc-popup-overlay.on { display: flex; }
+    .sc-popup {
+      background: #fff; border-radius: 28px; padding: 2.4rem 2.8rem;
+      box-shadow: 0 28px 90px rgba(0,0,0,0.3);
+      text-align: center; max-width: 320px; width: 90%;
+      animation: bonusIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .sc-popup-sparkle {
+      font-size: 1.8rem; letter-spacing: 0.4rem; margin-bottom: 0.2rem;
+    }
+    .sc-popup-icon { font-size: 3.8rem; margin: 0.2rem 0; }
+    .sc-popup-title {
+      font-size: 1.75rem; font-weight: 900; color: #1a1a1a;
+      letter-spacing: -0.03em; margin: 0.2rem 0 0.55rem;
+    }
+    .sc-popup-msg {
+      font-size: 0.88rem; color: #555; line-height: 1.85; margin-bottom: 0.9rem;
+    }
+    .sc-popup-cond {
+      font-size: 0.82rem; font-weight: 700;
+      background: #fff8e0; border: 1.5px solid #e8c840;
+      border-radius: 10px; padding: 0.4rem 0.9rem;
+      color: #8a6010; display: inline-block; margin-bottom: 1.3rem;
+    }
+    .sc-popup-btn {
+      width: 100%; padding: 0.82rem;
+      background: linear-gradient(135deg, #f5c842, #e8a020);
+      border: none; border-radius: 14px;
+      font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 800;
+      color: #fff; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(230,150,20,0.4);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .sc-popup-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(230,150,20,0.5); }
+    .sc-popup-btn:active { transform: translateY(0); }
   </style>
 </head>
 <body>
@@ -590,6 +632,22 @@
     <div class="bonus-player-name" id="bonusPlayerName"></div>
     <div class="bonus-progress"><div class="bonus-progress-fill" id="bonusProgressFill"></div></div>
     <div class="bonus-tap">탭하여 닫기</div>
+  </div>
+</div>
+
+<!-- Shortcut throw popup -->
+<div class="sc-popup-overlay" id="scPopupOverlay">
+  <div class="sc-popup">
+    <div class="sc-popup-sparkle">⚡ ⚡ ⚡</div>
+    <div class="sc-popup-icon">🔀</div>
+    <div class="sc-popup-title">지름길 분기점!</div>
+    <div class="sc-popup-msg">
+      앞면, 뒷면 중 선택하고 던지세요.<br>
+      앞, 뒤를 <strong>모두 맞춘다면</strong><br>
+      지름길로 갈 수 있습니다!
+    </div>
+    <div class="sc-popup-cond" id="scPopupCond"></div>
+    <button class="sc-popup-btn" onclick="dismissScPopup()">알겠어요! →</button>
   </div>
 </div>
 
@@ -905,6 +963,7 @@
     });
     document.getElementById('btnThrow').disabled = true;
     document.getElementById('shortcutCard').style.display = 'none';
+    document.getElementById('scPopupOverlay').classList.remove('on');
     document.getElementById('turnHint').textContent = '전진 방향을 선택하세요';
     renderLog();
   }
@@ -971,6 +1030,16 @@
     clearTimeout(ov._bonusTimer);
     ov.classList.remove('on');
     if (ov._bonusResolve) { ov._bonusResolve(); ov._bonusResolve = null; }
+  }
+
+  function dismissScPopup() {
+    document.getElementById('scPopupOverlay').classList.remove('on');
+    document.getElementById('shortcutCard').style.display = 'flex';
+    document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
+    G.dir = null;
+    document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('sel'));
+    document.getElementById('btnThrow').disabled = true;
+    document.getElementById('turnHint').textContent = '⚡ 지름길 도전! 방향을 선택하고 던지세요';
   }
 
   async function doThrow() {
@@ -1040,12 +1109,10 @@
         ? '방향을 선택하고 던지세요<br><strong>1개 일치</strong>하면 지름길!'
         : '방향을 선택하고 던지세요<br><strong>2개 모두 일치</strong>해야 지름길!';
       document.getElementById('shortcutDesc').innerHTML = condHtml;
-      document.getElementById('shortcutCard').style.display = 'flex';
-      document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
-      G.dir = null;
-      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('sel'));
-      document.getElementById('btnThrow').disabled = true;
-      document.getElementById('turnHint').textContent = '⚡ 지름길 도전! 방향을 선택하고 던지세요';
+      const condShort = toolLen === 1 ? '1개 일치하면 지름길!' : '2개 모두 일치해야 지름길!';
+      document.getElementById('scPopupCond').textContent = condShort;
+      document.getElementById('scPopupOverlay').classList.add('on');
+      document.getElementById('turnHint').textContent = '⚡ 지름길 분기점에 도착!';
       return;
     }
 
