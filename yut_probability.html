@@ -286,12 +286,25 @@
     .over-row:last-child { border-bottom: none; }
     .over-lbl { color: var(--gray); }
     .over-val { font-weight: 700; }
+    .over-name-wrap { margin-bottom: 0.9rem; }
+    .over-name-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--gray); margin-bottom: 0.4rem; }
+    .over-name-input {
+      width: 100%; padding: 0.65rem 0.9rem; border: 2px solid #e8e8e8; border-radius: 10px;
+      font-family: 'Inter', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.18s;
+    }
+    .over-name-input:focus { border-color: #2a7a38; }
     .btn-sheets {
       width: 100%; padding: 0.85rem; background: #2a7a38; color: #fff;
       border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
       font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-bottom: 0.7rem; transition: opacity 0.2s;
     }
-    .btn-sheets:hover { opacity: 0.85; }
+    .btn-sheets:hover:not(:disabled) { opacity: 0.85; }
+    .btn-sheets:disabled { opacity: 0.6; cursor: default; }
+    .over-stats-link {
+      display: block; text-align: center; margin-top: 0.6rem;
+      color: #4a7aaa; font-size: 0.82rem; font-weight: 700; text-decoration: none;
+    }
+    .over-stats-link:hover { text-decoration: underline; }
     .btn-restart {
       width: 100%; padding: 0.85rem; background: var(--black); color: #fff;
       border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
@@ -559,8 +572,13 @@
         <div class="over-row"><span class="over-lbl">윷 앞면 (평면)</span><span class="over-val" id="oYF">—</span></div>
         <div class="over-row"><span class="over-lbl">윷 뒷면 (둥근면)</span><span class="over-val" id="oYB">—</span></div>
       </div>
-      <button class="btn-sheets" onclick="saveToSheets()">📊 구글 시트에 기록하기</button>
+      <div class="over-name-wrap">
+        <label class="over-name-label" for="overStudentName">📝 이름을 입력하고 기록하세요</label>
+        <input class="over-name-input" id="overStudentName" type="text" placeholder="예) 홍길동" maxlength="20">
+      </div>
+      <button class="btn-sheets" id="btnSheets" onclick="saveToSheets()">📊 구글 시트에 기록하기</button>
       <button class="btn-restart" onclick="goSetup()">🔄 다시 하기</button>
+      <a class="over-stats-link" href="yut_stats.html">📊 전체 통계 보기 →</a>
     </div>
   </div>
 </div>
@@ -1119,26 +1137,42 @@
     document.getElementById('oCB').textContent = pct(cb,coin.t);
     document.getElementById('oYF').textContent = pct(yut.f,yut.t);
     document.getElementById('oYB').textContent = pct(yb,yut.t);
+    // reset sheets button
+    const btn = document.getElementById('btnSheets');
+    btn.textContent = '📊 구글 시트에 기록하기';
+    btn.disabled = false;
+    document.getElementById('overStudentName').value = '';
     show('over');
   }
 
   /* ── GOOGLE SHEETS ── */
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ24Cd_v_dFCORrRwnzp9OXeomowRL1D-wkXbKlDTs0QAm583KQiY-BUXx9l4fXpybTg/exec';
-  function saveToSheets() {
+  async function saveToSheets() {
+    const btn = document.getElementById('btnSheets');
+    btn.disabled = true;
+    btn.textContent = '⏳ 저장 중…';
     const {coin, yut} = G.stats;
     const winner = G.players[G.winner];
-    fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        type:'yut_game', winner:winner.name,
-        playerCount:G.players.length, boardType:G.boardType,
-        coinTotal:coin.t, coinFront:coin.f, coinBack:coin.t-coin.f,
-        yutTotal:yut.t,  yutFront:yut.f,  yutBack:yut.t-yut.f
-      })
-    })
-    .then(()=>showToast('구글 시트에 기록되었습니다!'))
-    .catch(()=>showToast('저장 중 오류가 발생했습니다.'));
+    const studentName = (document.getElementById('overStudentName').value || '').trim() || '익명';
+    try {
+      await fetch(SCRIPT_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          studentName,
+          type:'yut_game', winner:winner.name,
+          playerCount:G.players.length, boardType:G.boardType,
+          coinTotal:coin.t, coinFront:coin.f, coinBack:coin.t-coin.f,
+          yutTotal:yut.t,  yutFront:yut.f,  yutBack:yut.t-yut.f
+        })
+      });
+      btn.textContent = '✅ 기록 완료!';
+      showToast('구글 시트에 기록되었습니다!');
+    } catch {
+      btn.textContent = '⚠️ 오류 — 다시 시도';
+      btn.disabled = false;
+      showToast('저장 중 오류가 발생했습니다.');
+    }
   }
 
   /* ── UTILS ── */
