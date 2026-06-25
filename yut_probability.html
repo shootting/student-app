@@ -647,6 +647,7 @@
 
   /* ── GAME STATE ── */
   let G = {};
+  let G_nextTurnTimer = null;
   function initState(players) {
     G = {
       players, cur: 0, dir: null, boardType,
@@ -880,7 +881,10 @@
   function resetControls() {
     G.dir = null;
     G.awaitingShortcut = false;
-    document.querySelectorAll('.dir-btn').forEach(el => el.classList.remove('sel'));
+    document.querySelectorAll('.dir-btn').forEach(el => {
+      el.classList.remove('sel');
+      el.style.pointerEvents = '';   // 새 턴 시작 시에만 방향 버튼 복원
+    });
     document.getElementById('btnThrow').disabled = true;
     document.getElementById('shortcutCard').style.display = 'none';
     document.getElementById('turnHint').textContent = '전진 방향을 선택하세요';
@@ -951,11 +955,15 @@
 
   async function doThrow() {
     if (G.awaitingShortcut) return;
+    if (!G.dir) return;
+    clearTimeout(G_nextTurnTimer);
+    G_nextTurnTimer = null;
     document.getElementById('btnThrow').disabled = true;
     document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = 'none');
 
     const cp      = G.players[G.cur];
     const tools   = TOOL_LIST[cp.toolKey];
+    const dir     = G.dir;   // 비동기 구간 중 G.dir이 바뀌지 않도록 즉시 캡처
     const results = tools.map(t => ({type:t, result:throwOne(t)}));
 
     results.forEach(({type, result}) => {
@@ -965,7 +973,7 @@
 
     await showThrowAnim(results);
 
-    const match = results.filter(r => r.result === G.dir).length;
+    const match = results.filter(r => r.result === dir).length;
     const bonus = tools.length === 2 && match === 2;
 
     const fromIdx = cp.routeIdx;
@@ -974,10 +982,8 @@
     renderAll();
 
     // Append to throw log and render
-    G.throwLog.unshift({ playerName: cp.name, playerColor: cp.color, results, dir: G.dir, match, bonus });
+    G.throwLog.unshift({ playerName: cp.name, playerColor: cp.color, results, dir, match, bonus });
     renderLog();
-
-    document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
 
     // Win check
     if (getCurrentPos(cp) === 'done') { setTimeout(endGame, 600); return; }
@@ -993,13 +999,15 @@
 
     if (bonus) {
       await showBonusPopup(cp);
+      // 보너스: 같은 플레이어가 다시 던질 수 있도록 방향 버튼 복원
+      document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
       document.getElementById('turnHint').textContent = '🎉 한 번 더 던지세요!';
       G.dir = null;
       document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('sel'));
       document.getElementById('btnThrow').disabled = true;
     } else {
       document.getElementById('turnHint').textContent = '⏳ 다음 플레이어로 넘어갑니다…';
-      setTimeout(nextTurn, 1500);
+      G_nextTurnTimer = setTimeout(nextTurn, 1500);
     }
   }
 
