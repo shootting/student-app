@@ -497,13 +497,10 @@
           <span class="r-placeholder">방향을 선택 후 던져보세요.</span>
         </div>
 
-        <!-- Shortcut choice (board 2 only, hidden by default) -->
+        <!-- Shortcut throw card (board 2 only, hidden by default) -->
         <div class="shortcut-card" id="shortcutCard" style="display:none;">
-          <div class="ctrl-label">⚡ 지름길 분기점에 도착했습니다!</div>
-          <div class="dir-row">
-            <button class="dir-btn" onclick="chooseRoute('outer')">🔄 외곽으로 계속</button>
-            <button class="dir-btn shortcut-opt" onclick="chooseRoute('shortcut')">⚡ 지름길 타기</button>
-          </div>
+          <div class="ctrl-label">⚡ 지름길 도전!</div>
+          <div id="shortcutDesc" style="font-size:0.82rem;color:#8a6010;text-align:center;line-height:1.65;margin:0;"></div>
         </div>
       </div>
     </div>
@@ -645,15 +642,18 @@
     sB1:    {x:65, y:65, label:'·',type:'shortcut'},
     sB2:    {x:103,y:103,label:'·',type:'shortcut'},
     center: {x:140,y:140,label:'✦',type:'center-sp'},
+    sC1:    {x:215,y:65, label:'·',type:'shortcut'},
+    sC2:    {x:178,y:103,label:'·',type:'shortcut'},
     sO1:    {x:178,y:178,label:'·',type:'shortcut'},
     sO2:    {x:215,y:215,label:'·',type:'shortcut'},
   };
   const B2_ALL_COORDS = {...B2_OUTER_COORDS, ...B2_SC_COORDS};
 
   // Routes
-  const B2_OUTER_RT  = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,'done'];
-  const B2_SHORT4_RT = [4,'sA1','sA2','center','sO1','sO2','done'];
-  const B2_SHORT8_RT = [8,'sB1','sB2','center','sO1','sO2','done'];
+  const B2_OUTER_RT   = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,'done'];
+  const B2_SHORT4_RT  = [4, 'sA1','sA2','center','sO1','sO2','done'];
+  const B2_SHORT8_RT  = [8, 'sB1','sB2','center','sO1','sO2','done'];
+  const B2_SHORT12_RT = [12,'sC1','sC2','center','sO1','sO2','done'];
 
   function b2Route() { return [...B2_OUTER_RT]; }
 
@@ -670,7 +670,7 @@
     G = {
       players, cur: 0, dir: null, boardType,
       stats: { coin:{t:0,f:0}, yut:{t:0,f:0} },
-      winner: null, awaitingShortcut: false,
+      winner: null, shortcutThrow: false,
       throwLog: []
     };
   }
@@ -898,10 +898,10 @@
 
   function resetControls() {
     G.dir = null;
-    G.awaitingShortcut = false;
+    G.shortcutThrow = false;
     document.querySelectorAll('.dir-btn').forEach(el => {
       el.classList.remove('sel');
-      el.style.pointerEvents = '';   // 새 턴 시작 시에만 방향 버튼 복원
+      el.style.pointerEvents = '';
     });
     document.getElementById('btnThrow').disabled = true;
     document.getElementById('shortcutCard').style.display = 'none';
@@ -930,7 +930,9 @@
               <span class="r-chip-type">${lbl[r.type]}</span>
               <span class="r-chip-face">${face[r.result]}</span>
             </div>`).join('')}
-          <span class="r-move">${face[e.dir]} ${e.match}개 → <strong>${e.match}칸 전진</strong></span>
+          ${e.isShortcut
+            ? `<span class="r-move">${e.shortcutOk ? '⚡ 지름길 성공!' : '💨 지름길 실패'}</span>`
+            : `<span class="r-move">${face[e.dir]} ${e.match}개 → <strong>${e.match}칸 전진</strong></span>`}
           ${e.bonus ? '<span class="r-bonus">🎉 한 번 더!</span>' : ''}
         </div>
       </div>`).join('');
@@ -972,7 +974,6 @@
   }
 
   async function doThrow() {
-    if (G.awaitingShortcut) return;
     if (!G.dir) return;
     clearTimeout(G_nextTurnTimer);
     G_nextTurnTimer = null;
@@ -992,32 +993,64 @@
     await showThrowAnim(results);
 
     const match = results.filter(r => r.result === dir).length;
-    const bonus = tools.length === 2 && match === 2;
 
+    // ── 지름길 도전 던지기 모드 ──────────────────────────────────
+    if (G.shortcutThrow) {
+      G.shortcutThrow = false;
+      const allMatch = match === tools.length;
+      G.throwLog.unshift({ playerName: cp.name, playerColor: cp.color, results, dir, match,
+                           bonus: false, isShortcut: true, shortcutOk: allMatch });
+      renderLog();
+      document.getElementById('shortcutCard').style.display = 'none';
+      if (allMatch) {
+        const pos = getCurrentPos(cp);
+        if (pos === 4)  { cp.route = [...B2_SHORT4_RT];  cp.routeIdx = 0; }
+        if (pos === 8)  { cp.route = [...B2_SHORT8_RT];  cp.routeIdx = 0; }
+        if (pos === 12) { cp.route = [...B2_SHORT12_RT]; cp.routeIdx = 0; }
+        placeTokens();
+        renderAll();
+        showToast('⚡ 지름길 성공! 지름길로 이동합니다');
+      } else {
+        renderAll();
+        showToast(`💨 지름길 실패 (${match}/${tools.length}개 일치) — 외곽으로 계속`);
+      }
+      G_nextTurnTimer = setTimeout(nextTurn, 1500);
+      return;
+    }
+
+    // ── 일반 이동 ────────────────────────────────────────────────
+    const bonus   = tools.length === 2 && match === 2;
     const fromIdx = cp.routeIdx;
     const toIdx   = Math.min(cp.routeIdx + match, cp.route.length - 1);
     await animateSteps(G.cur, fromIdx, toIdx);
     renderAll();
 
-    // Append to throw log and render
     G.throwLog.unshift({ playerName: cp.name, playerColor: cp.color, results, dir, match, bonus });
     renderLog();
 
     // Win check
     if (getCurrentPos(cp) === 'done') { setTimeout(endGame, 600); return; }
 
-    // Shortcut check (board 2, corners 4 & 8)
+    // Shortcut check (board 2, corners 4, 8, 12)
     const pos = getCurrentPos(cp);
-    if (G.boardType === 2 && (pos === 4 || pos === 8)) {
-      G.awaitingShortcut = true;
+    if (G.boardType === 2 && (pos === 4 || pos === 8 || pos === 12)) {
+      G.shortcutThrow = true;
+      const toolLen  = tools.length;
+      const condHtml = toolLen === 1
+        ? '방향을 선택하고 던지세요<br><strong>1개 일치</strong>하면 지름길!'
+        : '방향을 선택하고 던지세요<br><strong>2개 모두 일치</strong>해야 지름길!';
+      document.getElementById('shortcutDesc').innerHTML = condHtml;
       document.getElementById('shortcutCard').style.display = 'flex';
-      document.getElementById('turnHint').textContent = '⚡ 지름길 분기점에 도착!';
+      document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
+      G.dir = null;
+      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('sel'));
+      document.getElementById('btnThrow').disabled = true;
+      document.getElementById('turnHint').textContent = '⚡ 지름길 도전! 방향을 선택하고 던지세요';
       return;
     }
 
     if (bonus) {
       await showBonusPopup(cp);
-      // 보너스: 같은 플레이어가 다시 던질 수 있도록 방향 버튼 복원
       document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
       document.getElementById('turnHint').textContent = '🎉 한 번 더 던지세요!';
       G.dir = null;
@@ -1027,20 +1060,6 @@
       document.getElementById('turnHint').textContent = '⏳ 다음 플레이어로 넘어갑니다…';
       G_nextTurnTimer = setTimeout(nextTurn, 1500);
     }
-  }
-
-  function chooseRoute(choice) {
-    const p   = G.players[G.cur];
-    const pos = getCurrentPos(p);
-    if (choice === 'shortcut') {
-      if (pos === 4) { p.route = [...B2_SHORT4_RT]; p.routeIdx = 0; }
-      if (pos === 8) { p.route = [...B2_SHORT8_RT]; p.routeIdx = 0; }
-      showToast('⚡ 지름길을 선택했습니다!');
-      placeTokens();
-    }
-    G.awaitingShortcut = false;
-    document.getElementById('shortcutCard').style.display = 'none';
-    setTimeout(nextTurn, 600);
   }
 
   function nextTurn() {
