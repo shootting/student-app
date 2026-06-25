@@ -462,7 +462,7 @@
 <svg class="deco deco-10" width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" fill="#c5d8f0" opacity="0.8"/></svg>
 
 <nav>
-  <a href="index.html" class="nav-logo">∑ 재미있는 수학 콘텐츠</a>
+  <a href="../index.html" class="nav-logo">∑ 재미있는 수학 콘텐츠</a>
   <a href="prob_stat.html" class="btn-nav">← 확률과 통계</a>
 </nav>
 
@@ -574,7 +574,7 @@
         <hr class="stat-divider" />
         <div class="stat-block">
           <div class="stat-head">
-            <img src="image/yut_round.png" style="height:36px;width:auto;vertical-align:middle;" alt="윷">
+            <img src="../image/yut_round.png" style="height:36px;width:auto;vertical-align:middle;" alt="윷">
             <span class="stat-tool-name" style="margin-left:4px;">윷</span>
             <span class="stat-cnt" id="yutTot">총 0회</span>
           </div>
@@ -591,7 +591,7 @@
 
       <!-- 윷 설명 이미지 -->
       <div class="explain-card">
-        <img src="image/yut_explain.png" alt="윷 설명" />
+        <img src="../image/yut_explain.png" alt="윷 설명" />
       </div>
     </div>
   </div>
@@ -756,7 +756,7 @@
   });
 
   /* ── NAME + TOOL INPUTS ── */
-  const YI = `<img src="image/yut_round.png" alt="윷">`;  // small in CSS via .tool-sel-btn img
+  const YI = `<img src="../image/yut_round.png" alt="윷">`;  // small in CSS via .tool-sel-btn img
   const CI = `<span style="font-size:1rem;line-height:1;">🪙</span>`;
 
   const TOOL_OPTS_1 = [
@@ -1153,7 +1153,7 @@
       if (r.type === 'coin') {
         ico = '<div class="throw-ico">🪙</div>';
       } else {
-        const src = r.result === 'back' ? 'image/yut_flat.png' : 'image/yut_round.png';
+        const src = r.result === 'back' ? '../image/yut_flat.png' : '../image/yut_round.png';
         ico = `<img src="${src}" class="throw-yut-img" alt="윷">`;
       }
       return `<div class="throw-item">${ico}<div class="throw-face ${r.result}">${face[r.result]}</div></div>`;
@@ -1165,7 +1165,7 @@
 
   /* ── RENDER ── */
   function toolBadgeHtml(key) {
-    const yi = `<img src="image/yut_round.png" style="height:28px;width:auto;vertical-align:middle;" alt="윷">`;
+    const yi = `<img src="../image/yut_round.png" style="height:28px;width:auto;vertical-align:middle;" alt="윷">`;
     const ci = `<span style="font-size:0.9rem;">🪙</span>`;
     return {c:ci, y:yi, cc:ci+ci, yy:yi+yi, cy:ci+yi}[key] || '';
   }
