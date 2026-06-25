@@ -330,6 +330,66 @@
     .deco-8  { top:82%;  right:7%;  animation-delay:1.6s; animation-duration:4.4s; }
     .deco-9  { top:30%;  left:1%;   animation-delay:2.4s; animation-duration:5.0s; }
     .deco-10 { top:65%;  right:2%;  animation-delay:0.2s; animation-duration:3.7s; }
+
+    /* ── BONUS POPUP ── */
+    .bonus-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.58); z-index: 600;
+      align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .bonus-overlay.on { display: flex; }
+    .bonus-popup {
+      background: #fff; border-radius: 28px; padding: 2.4rem 3rem;
+      box-shadow: 0 28px 90px rgba(0,0,0,0.3);
+      text-align: center; max-width: 320px; width: 90%;
+      animation: bonusIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative; overflow: hidden;
+    }
+    @keyframes bonusIn {
+      from { transform: scale(0.5) translateY(40px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .bonus-sparkle-row {
+      font-size: 2rem; letter-spacing: 0.5rem;
+      animation: sparkleWiggle 0.65s ease infinite alternate;
+    }
+    @keyframes sparkleWiggle {
+      from { transform: scale(1) rotate(-5deg); }
+      to   { transform: scale(1.15) rotate(5deg); }
+    }
+    .bonus-icon {
+      font-size: 4.2rem; margin: 0.4rem 0;
+      animation: bonusBounce 0.5s ease infinite alternate;
+    }
+    @keyframes bonusBounce {
+      from { transform: translateY(0) scale(1); }
+      to   { transform: translateY(-12px) scale(1.12); }
+    }
+    .bonus-title {
+      font-size: 2.2rem; font-weight: 900; color: #1a1a1a;
+      letter-spacing: -0.03em; margin: 0.2rem 0 0.1rem;
+    }
+    .bonus-sub { font-size: 0.92rem; color: #888; margin-bottom: 0.9rem; }
+    .bonus-player-name {
+      font-size: 1.05rem; font-weight: 800;
+      padding: 0.28rem 1.1rem; border-radius: 20px;
+      display: inline-block; background: rgba(0,0,0,0.07);
+    }
+    .bonus-progress {
+      height: 5px; background: #eee; border-radius: 5px;
+      margin-top: 1.4rem; overflow: hidden;
+    }
+    .bonus-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #f5c842, #f07840);
+      border-radius: 5px; width: 100%;
+    }
+    @keyframes bonusCountdown {
+      from { width: 100%; }
+      to   { width: 0%; }
+    }
+    .bonus-tap { font-size: 0.7rem; color: #ccc; margin-top: 0.5rem; }
   </style>
 </head>
 <body>
@@ -502,6 +562,19 @@
       <button class="btn-sheets" onclick="saveToSheets()">📊 구글 시트에 기록하기</button>
       <button class="btn-restart" onclick="goSetup()">🔄 다시 하기</button>
     </div>
+  </div>
+</div>
+
+<!-- Bonus popup -->
+<div class="bonus-overlay" id="bonusOverlay" onclick="dismissBonus()">
+  <div class="bonus-popup">
+    <div class="bonus-sparkle-row">✨ ✨ ✨</div>
+    <div class="bonus-icon">🎉</div>
+    <div class="bonus-title">2개 일치!</div>
+    <div class="bonus-sub">한 번 더 던질 수 있어요</div>
+    <div class="bonus-player-name" id="bonusPlayerName"></div>
+    <div class="bonus-progress"><div class="bonus-progress-fill" id="bonusProgressFill"></div></div>
+    <div class="bonus-tap">탭하여 닫기</div>
   </div>
 </div>
 
@@ -845,6 +918,37 @@
   /* ── THROW ── */
   function throwOne(type) { return Math.random() < PROB[type] ? 'front' : 'back'; }
 
+  function showBonusPopup(player) {
+    return new Promise(resolve => {
+      const ov = document.getElementById('bonusOverlay');
+      const nameEl = document.getElementById('bonusPlayerName');
+      nameEl.textContent = player.name + '님';
+      nameEl.style.color = player.color;
+
+      const fill = document.getElementById('bonusProgressFill');
+      fill.style.animation = 'none';
+      void fill.offsetWidth;
+      fill.style.animation = 'bonusCountdown 2.5s linear forwards';
+
+      ov.classList.add('on');
+
+      const timer = setTimeout(() => {
+        ov.classList.remove('on');
+        resolve();
+      }, 2500);
+
+      ov._bonusResolve = resolve;
+      ov._bonusTimer = timer;
+    });
+  }
+
+  function dismissBonus() {
+    const ov = document.getElementById('bonusOverlay');
+    clearTimeout(ov._bonusTimer);
+    ov.classList.remove('on');
+    if (ov._bonusResolve) { ov._bonusResolve(); ov._bonusResolve = null; }
+  }
+
   async function doThrow() {
     if (G.awaitingShortcut) return;
     document.getElementById('btnThrow').disabled = true;
@@ -888,6 +992,7 @@
     }
 
     if (bonus) {
+      await showBonusPopup(cp);
       document.getElementById('turnHint').textContent = '🎉 한 번 더 던지세요!';
       G.dir = null;
       document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('sel'));
