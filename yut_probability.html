@@ -443,7 +443,7 @@
         <hr class="stat-divider" />
         <div class="stat-block">
           <div class="stat-head">
-            <img src="../image/yut_round.png" style="height:18px;width:auto;vertical-align:middle;" alt="윷">
+            <img src="image/yut_round.png" style="height:18px;width:auto;vertical-align:middle;" alt="윷">
             <span class="stat-tool-name" style="margin-left:4px;">윷</span>
             <span class="stat-cnt" id="yutTot">총 0회</span>
           </div>
@@ -460,7 +460,7 @@
 
       <!-- 윷 설명 이미지 -->
       <div class="explain-card">
-        <img src="../image/yut_explain.png" alt="윷 설명" />
+        <img src="image/yut_explain.png" alt="윷 설명" />
       </div>
     </div>
   </div>
@@ -586,7 +586,7 @@
   });
 
   /* ── NAME + TOOL INPUTS ── */
-  const YI = `<img src="../image/yut_round.png" alt="윷">`;  // small in CSS via .tool-sel-btn img
+  const YI = `<img src="image/yut_round.png" alt="윷">`;  // small in CSS via .tool-sel-btn img
   const CI = `<span style="font-size:1rem;line-height:1;">🪙</span>`;
 
   const TOOL_OPTS_1 = [
@@ -858,7 +858,7 @@
       <div class="throw-item">
         ${r.type === 'coin'
           ? '<div class="throw-ico">🪙</div>'
-          : '<img src="../image/yut_round.png" class="throw-yut-img" alt="윷">'}
+          : '<img src="image/yut_round.png" class="throw-yut-img" alt="윷">'}
         <div class="throw-face ${r.result}">${face[r.result]}</div>
       </div>`).join('');
     overlay.classList.add('on');
@@ -868,7 +868,7 @@
 
   /* ── RENDER ── */
   function toolBadgeHtml(key) {
-    const yi = `<img src="../image/yut_round.png" style="height:14px;width:auto;vertical-align:middle;" alt="윷">`;
+    const yi = `<img src="image/yut_round.png" style="height:14px;width:auto;vertical-align:middle;" alt="윷">`;
     const ci = `<span style="font-size:0.9rem;">🪙</span>`;
     return {c:ci, y:yi, cc:ci+ci, yy:yi+yi, cy:ci+yi}[key] || '';
   }
