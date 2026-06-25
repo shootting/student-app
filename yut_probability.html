@@ -129,8 +129,15 @@
       position: absolute; width: 13px; height: 13px; border-radius: 50%;
       border: 2px solid rgba(255,255,255,0.9);
       box-shadow: 0 2px 5px rgba(0,0,0,0.25); z-index: 10;
-      transition: left 0.45s ease, top 0.45s ease;
+      transition: left 0.32s cubic-bezier(0.4,0,0.2,1), top 0.32s cubic-bezier(0.4,0,0.2,1);
     }
+    @keyframes tokenLand {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.7); box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
+      65%  { transform: scale(0.85); }
+      100% { transform: scale(1); box-shadow: 0 2px 5px rgba(0,0,0,0.25); }
+    }
+    .p-token.landing { animation: tokenLand 0.32s ease; }
 
     /* Controls */
     .ctrl-card {
@@ -662,7 +669,7 @@
   /* ── BOARD BUILDING ── */
   function buildBoard() {
     const board = document.getElementById('board');
-    board.querySelectorAll('.b-space, .board-svg').forEach(el => el.remove());
+    board.querySelectorAll('.b-space, .board-svg, .p-token').forEach(el => el.remove());
     G.boardType === 2 ? buildBoard2(board) : buildBoard1(board);
   }
 
@@ -731,30 +738,63 @@
   /* ── TOKEN PLACEMENT ── */
   function getCurrentPos(p) { return p.route[p.routeIdx]; }
 
+  function getSpaceCoords(pos) {
+    if (G.boardType === 1) {
+      if (typeof pos !== 'number') return null;
+      const a = Math.PI/2 - (pos/B1_N)*2*Math.PI;
+      return { x: B1_CX + B1_R*Math.cos(a), y: B1_CY + B1_R*Math.sin(a) };
+    }
+    const info = B2_ALL_COORDS[String(pos)];
+    return info ? { x: info.x, y: info.y } : null;
+  }
+
   function placeTokens() {
-    document.querySelectorAll('.p-token').forEach(t => t.remove());
-    const groups = {};
+    const board = document.getElementById('board');
+    const offs  = [[-6,-6],[6,-6],[-6,6],[6,6],[0,0]];
     G.players.forEach((p, i) => {
-      const pos = getCurrentPos(p);
-      if (pos !== 'done') {
-        const key = String(pos);
-        (groups[key] = groups[key]||[]).push({p, i});
-      }
-    });
-    const offs = [[-6,-6],[6,-6],[-6,6],[6,6],[0,0]];
-    Object.entries(groups).forEach(([posKey, arr]) => {
-      const sp = document.getElementById(`sp${posKey}`);
-      if (!sp) return;
-      arr.forEach(({p, i}, nth) => {
-        const tk = document.createElement('div');
+      let tk = document.getElementById(`tk${i}`);
+      if (!tk) {
+        tk = document.createElement('div');
         tk.className = 'p-token';
+        tk.id = `tk${i}`;
         tk.style.background = p.color;
-        const [ox, oy] = offs[Math.min(nth, offs.length-1)];
-        tk.style.left = (21-6.5+ox)+'px';
-        tk.style.top  = (21-6.5+oy)+'px';
-        sp.appendChild(tk);
-      });
+        board.appendChild(tk);
+      }
+      const pos = getCurrentPos(p);
+      if (pos === 'done') { tk.style.opacity = '0.25'; return; }
+      tk.style.opacity = '1';
+      const coords = getSpaceCoords(pos);
+      if (!coords) return;
+      const stackN = G.players.slice(0, i).filter(pp => getCurrentPos(pp) === pos).length;
+      const [ox, oy] = offs[Math.min(stackN, offs.length-1)];
+      tk.style.left = (coords.x - 6.5 + ox) + 'px';
+      tk.style.top  = (coords.y - 6.5 + oy) + 'px';
     });
+  }
+
+  async function animateSteps(pIdx, fromIdx, toIdx) {
+    if (fromIdx === toIdx) return;
+    const p  = G.players[pIdx];
+    const tk = document.getElementById(`tk${pIdx}`);
+    if (!tk) return;
+
+    for (let i = fromIdx + 1; i <= toIdx; i++) {
+      p.routeIdx = i;
+      const pos = getCurrentPos(p);
+      if (pos === 'done') { tk.style.opacity = '0.25'; break; }
+      const coords = getSpaceCoords(pos);
+      if (!coords) break;
+
+      tk.style.left = (coords.x - 6.5) + 'px';
+      tk.style.top  = (coords.y - 6.5) + 'px';
+
+      // reflow trick to restart animation each step
+      tk.classList.remove('landing');
+      void tk.offsetWidth;
+      tk.classList.add('landing');
+
+      await sleep(440);
+    }
   }
 
   /* ── CONTROLS ── */
@@ -824,7 +864,9 @@
     const match = results.filter(r => r.result === G.dir).length;
     const bonus = tools.length === 2 && match === 2;
 
-    cp.routeIdx = Math.min(cp.routeIdx + match, cp.route.length - 1);
+    const fromIdx = cp.routeIdx;
+    const toIdx   = Math.min(cp.routeIdx + match, cp.route.length - 1);
+    await animateSteps(G.cur, fromIdx, toIdx);
     renderAll();
 
     // Append to throw log and render
