@@ -10,7 +10,6 @@
     :root {
       --black: #111111; --gray: #666666; --bg: #fafafa;
       --blue: #c5d8f0; --accent: #4a7aaa;
-      --p0: #e05050; --p1: #4a7aaa; --p2: #3aaa70; --p3: #9050c8;
     }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--black); min-height: 100vh; }
 
@@ -32,30 +31,45 @@
     .screen.active { display: block; }
 
     /* ── SETUP ── */
-    .setup-wrap { max-width: 500px; margin: 3.5rem auto; padding: 0 1.5rem; }
+    .setup-wrap { max-width: 560px; margin: 3rem auto; padding: 0 1.5rem 3rem; }
     .setup-card {
       background: #fff; border-radius: 24px; padding: 2.4rem;
       box-shadow: 0 4px 24px rgba(0,0,0,0.08);
     }
-    .setup-card h1 { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.4rem; }
+    .setup-card h1 { font-size: 1.8rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.4rem; }
     .setup-card > p { font-size: 0.88rem; color: var(--gray); line-height: 1.75; margin-bottom: 1.8rem; }
-    .field-label { font-size: 0.7rem; font-weight: 700; color: var(--gray); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.55rem; }
-    .count-row { display: flex; gap: 0.55rem; margin-bottom: 1.8rem; }
+    .field-label {
+      font-size: 0.7rem; font-weight: 700; color: var(--gray);
+      letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.55rem;
+    }
+    .count-row { display: flex; gap: 0.55rem; margin-bottom: 1.6rem; }
     .count-btn {
-      flex: 1; padding: 0.7rem; border: 2px solid #e0e0e0; border-radius: 12px;
-      background: #fff; font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 700;
-      cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s;
+      flex: 1; padding: 0.68rem 0.4rem; border: 2px solid #e0e0e0; border-radius: 12px;
+      background: #fff; font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; line-height: 1.3;
     }
     .count-btn.sel { border-color: var(--accent); background: var(--blue); color: var(--accent); }
-    .name-list { display: flex; flex-direction: column; gap: 0.55rem; margin-bottom: 1.8rem; }
-    .name-row { display: flex; align-items: center; gap: 0.7rem; }
+
+    .name-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.8rem; }
+    .name-row { display: flex; align-items: center; gap: 0.55rem; }
     .p-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
     .name-input {
       flex: 1; border: 1.5px solid #e0e0e0; border-radius: 10px;
-      padding: 0.6rem 0.85rem; font-family: 'Inter', sans-serif; font-size: 0.88rem; outline: none;
-      transition: border-color 0.2s;
+      padding: 0.58rem 0.85rem; font-family: 'Inter', sans-serif; font-size: 0.88rem; outline: none;
+      transition: border-color 0.2s; min-width: 0;
     }
     .name-input:focus { border-color: var(--accent); }
+    .tool-sel { display: flex; gap: 0.22rem; flex-shrink: 0; }
+    .tool-sel-btn {
+      padding: 0.28rem 0.45rem; border: 1.5px solid #e0e0e0; border-radius: 7px;
+      background: #fff; cursor: pointer; font-family: 'Inter', sans-serif;
+      font-size: 0.64rem; font-weight: 600; white-space: nowrap;
+      transition: border-color 0.15s, background 0.15s; color: var(--black);
+      display: flex; align-items: center; gap: 0.18rem;
+    }
+    .tool-sel-btn.sel { border-color: var(--accent); background: var(--blue); color: var(--accent); }
+    .tool-sel-btn img { height: 12px; width: auto; vertical-align: middle; }
+
     .btn-primary {
       width: 100%; padding: 0.95rem; background: var(--black); color: #fff;
       border: none; border-radius: 14px; font-family: 'Inter', sans-serif;
@@ -77,26 +91,35 @@
       display: flex; align-items: center; gap: 0.75rem;
     }
     .turn-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+    .turn-info { flex: 1; }
     .turn-banner h2 { font-size: 1rem; font-weight: 800; }
     .turn-banner small { font-size: 0.78rem; color: var(--gray); display: block; margin-top: 1px; }
+    .turn-tool-badge {
+      display: flex; align-items: center; gap: 0.2rem;
+      background: #f5f5f5; border-radius: 8px; padding: 0.3rem 0.6rem; flex-shrink: 0;
+    }
+    .turn-tool-badge img { height: 14px; width: auto; vertical-align: middle; }
 
     /* Board */
     .board-card {
       background: #fff; border-radius: 20px; padding: 1.4rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-      display: flex; justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07); display: flex; justify-content: center;
     }
     #board { position: relative; width: 280px; height: 280px; flex-shrink: 0; }
     .b-space {
       position: absolute; width: 42px; height: 42px; border-radius: 50%;
       background: #f0f5fb; border: 2px solid #cce0f0;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; align-items: center; justify-content: center; z-index: 1;
     }
-    .b-space.go { background: #fffbe8; border-color: #f0c840; }
-    .b-space.finish { background: #eaf8ec; border-color: #60c070; }
-    .b-num { font-size: 0.6rem; font-weight: 800; color: #999; }
-    .b-space.go    .b-num { color: #b08020; font-size: 0.55rem; }
-    .b-space.finish .b-num { color: #2a8a3a; font-size: 0.55rem; }
+    .b-space.go     { background: #fffbe8; border-color: #f0c840; }
+    .b-space.corner { background: #fff5e0; border-color: #e8c040; border-width: 2.5px; }
+    .b-space.shortcut { background: #f0fbf0; border-color: #88c888; }
+    .b-space.center-sp { background: #fef0f8; border-color: #d070a0; border-width: 2.5px; }
+    .b-num { font-size: 0.58rem; font-weight: 800; color: #999; text-align: center; line-height: 1.2; }
+    .b-space.go      .b-num { color: #b08020; }
+    .b-space.corner  .b-num { color: #a07010; font-size: 0.65rem; }
+    .b-space.center-sp .b-num { color: #a03080; font-size: 0.65rem; }
+    .b-space.shortcut .b-num { color: #40a040; font-size: 0.7rem; }
     .board-label {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
       font-size: 0.72rem; font-weight: 700; color: #ccc; text-align: center; line-height: 1.55;
@@ -116,22 +139,7 @@
       display: flex; flex-direction: column; gap: 0.9rem;
     }
     .ctrl-label { font-size: 0.68rem; font-weight: 700; color: var(--gray); letter-spacing: 0.06em; text-transform: uppercase; }
-
-    .tool-row { display: flex; gap: 0.5rem; }
-    .tool-card {
-      flex: 1; padding: 0.7rem 0.3rem; border: 2px solid #e8e8e8; border-radius: 12px;
-      background: #fff; cursor: pointer; text-align: center;
-      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
-      transition: border-color 0.18s, background 0.18s;
-    }
-    .tool-card:hover { border-color: var(--accent); background: #f5f9ff; }
-    .tool-card.sel   { border-color: var(--accent); background: var(--blue); }
-    .t-icons { display: flex; gap: 3px; justify-content: center; align-items: center; }
-    .coin-ico { font-size: 1.3rem; line-height: 1; }
-    .yut-ico { display: inline-block; vertical-align: middle; }
-    .t-lbl { font-size: 0.68rem; font-weight: 600; color: var(--gray); }
-
-    .dir-row { display: flex; gap: 0.5rem; }
+    .dir-row { display: flex; gap: 0.5rem; margin-top: 0.4rem; }
     .dir-btn {
       flex: 1; padding: 0.65rem 0.3rem; border: 2px solid #e8e8e8; border-radius: 10px;
       background: #fff; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 700;
@@ -139,6 +147,8 @@
     }
     .dir-btn:hover { border-color: var(--accent); background: #f5f9ff; }
     .dir-btn.sel   { border-color: var(--accent); background: var(--blue); color: var(--accent); }
+    .dir-btn.shortcut-opt { border-color: #e8c030; color: #8a6010; }
+    .dir-btn.shortcut-opt:hover { background: #fff8e0; border-color: #d4a820; }
 
     .btn-throw {
       width: 100%; padding: 0.9rem; background: var(--black); color: #fff;
@@ -157,7 +167,7 @@
     }
     .r-chip {
       display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
-      padding: 0.4rem 0.7rem; border-radius: 8px; min-width: 54px; text-align: center;
+      padding: 0.4rem 0.7rem; border-radius: 8px; min-width: 52px; text-align: center;
     }
     .r-chip.front { background: #fffbe0; border: 1.5px solid #e8c030; }
     .r-chip.back  { background: #edf4ff; border: 1.5px solid #90b8e0; }
@@ -170,13 +180,11 @@
     @keyframes blink { from { opacity: 0.6; } to { opacity: 1; } }
     .r-placeholder { font-size: 0.8rem; color: #bbb; }
 
-    .btn-next {
-      display: none; width: 100%; padding: 0.8rem; background: var(--accent); color: #fff;
-      border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
-      font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;
+    /* Shortcut card */
+    .shortcut-card {
+      background: #fffbe8; border: 1.5px solid #e8d060; border-radius: 12px;
+      padding: 0.9rem 1rem; flex-direction: column; gap: 0.6rem;
     }
-    .btn-next:hover { opacity: 0.85; }
-    .btn-next.on { display: block; }
 
     /* ── SIDEBAR ── */
     .side-col { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 72px; align-self: start; }
@@ -192,7 +200,7 @@
       padding: 0.5rem 0.7rem; border-radius: 9px; background: #f8f8f8;
     }
     .p-row.cur { background: var(--blue); }
-    .p-row-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .p-row-dot  { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .p-row-name { flex: 1; font-size: 0.8rem; font-weight: 700; }
     .p-row-pos  { font-size: 0.75rem; color: var(--gray); font-weight: 600; }
 
@@ -200,16 +208,22 @@
     .stat-block:last-child { margin-bottom: 0; }
     .stat-head  { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.45rem; }
     .stat-tool-name { font-size: 0.78rem; font-weight: 700; }
-    .stat-cnt  { font-size: 0.68rem; color: var(--gray); margin-left: auto; }
-    .stat-row  { margin-bottom: 0.35rem; }
-    .stat-rh   { display: flex; justify-content: space-between; margin-bottom: 0.18rem; }
-    .stat-rl   { font-size: 0.68rem; font-weight: 600; color: var(--gray); }
-    .stat-rv   { font-size: 0.68rem; font-weight: 700; }
+    .stat-cnt   { font-size: 0.68rem; color: var(--gray); margin-left: auto; }
+    .stat-row   { margin-bottom: 0.35rem; }
+    .stat-rh    { display: flex; justify-content: space-between; margin-bottom: 0.18rem; }
+    .stat-rl    { font-size: 0.68rem; font-weight: 600; color: var(--gray); }
+    .stat-rv    { font-size: 0.68rem; font-weight: 700; }
     .stat-track { background: #f0f0f0; border-radius: 999px; height: 5px; overflow: hidden; }
     .stat-fill  { height: 100%; border-radius: 999px; transition: width 0.4s ease; width: 0%; }
     .fill-front { background: #ddb830; }
     .fill-back  { background: #88b0d8; }
     .stat-divider { border: none; border-top: 1px solid #f0f0f0; margin: 0.8rem 0; }
+
+    .explain-card {
+      background: #fff; border-radius: 18px; overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    }
+    .explain-card img { width: 100%; display: block; }
 
     /* ── THROW POPUP ── */
     .throw-overlay {
@@ -221,23 +235,20 @@
     .throw-popup {
       background: #fff; border-radius: 22px; padding: 2rem 2.8rem;
       box-shadow: 0 24px 60px rgba(0,0,0,0.2);
-      display: flex; gap: 2rem; align-items: center;
-      animation: popIn 0.2s ease;
+      display: flex; gap: 2rem; align-items: center; animation: popIn 0.2s ease;
     }
     @keyframes popIn { from { transform: scale(0.82); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .throw-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
-    .throw-ico { font-size: 2.8rem; line-height: 1; animation: toss 0.55s ease; }
-    .yut-ico-lg { display: inline-block; animation: toss 0.55s ease; }
+    .throw-ico     { font-size: 2.8rem; line-height: 1; animation: toss 0.55s ease; }
+    .throw-yut-img { height: 50px; width: auto; animation: toss 0.55s ease; }
     @keyframes toss {
       0%,100% { transform: rotate(0deg) translateY(0); }
-      20% { transform: rotate(-22deg) translateY(-8px); }
-      40% { transform: rotate(18deg) translateY(-14px); }
-      60% { transform: rotate(-12deg) translateY(-6px); }
-      80% { transform: rotate(8deg) translateY(-2px); }
+      20%     { transform: rotate(-22deg) translateY(-8px); }
+      40%     { transform: rotate(18deg) translateY(-14px); }
+      60%     { transform: rotate(-12deg) translateY(-6px); }
+      80%     { transform: rotate(8deg) translateY(-2px); }
     }
-    .throw-face {
-      font-size: 0.95rem; font-weight: 800; padding: 0.35rem 0.9rem; border-radius: 8px;
-    }
+    .throw-face { font-size: 0.95rem; font-weight: 800; padding: 0.35rem 0.9rem; border-radius: 8px; }
     .throw-face.front { background: #fffbe0; color: #9a7010; }
     .throw-face.back  { background: #edf4ff; color: #3a6a9a; }
 
@@ -250,9 +261,7 @@
     .over-trophy { font-size: 3.5rem; margin-bottom: 0.8rem; }
     .over-card h1 { font-size: 1.9rem; font-weight: 900; letter-spacing: -0.04em; margin-bottom: 0.5rem; }
     .over-winner  { font-size: 1.15rem; font-weight: 700; margin-bottom: 1.8rem; }
-    .over-stats {
-      background: #f8f8f8; border-radius: 16px; padding: 1.2rem; text-align: left; margin-bottom: 1.4rem;
-    }
+    .over-stats { background: #f8f8f8; border-radius: 16px; padding: 1.2rem; text-align: left; margin-bottom: 1.4rem; }
     .over-stats h3 { font-size: 0.72rem; font-weight: 800; color: var(--gray); letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.9rem; }
     .over-row { display: flex; justify-content: space-between; padding: 0.38rem 0; border-bottom: 1px solid #eee; font-size: 0.84rem; }
     .over-row:last-child { border-bottom: none; }
@@ -261,8 +270,7 @@
     .btn-sheets {
       width: 100%; padding: 0.85rem; background: #2a7a38; color: #fff;
       border: none; border-radius: 12px; font-family: 'Inter', sans-serif;
-      font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-bottom: 0.7rem;
-      transition: opacity 0.2s;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; margin-bottom: 0.7rem; transition: opacity 0.2s;
     }
     .btn-sheets:hover { opacity: 0.85; }
     .btn-restart {
@@ -288,77 +296,36 @@
       .game-wrap { grid-template-columns: 1fr; }
       .side-col { position: static; }
       nav { padding: 1rem 1.2rem; }
-      .deco-1, .deco-2, .deco-5, .deco-8 { display: none; }
     }
 
     /* ── BACKGROUND DECOS ── */
-    .deco {
-      position: fixed; pointer-events: none; z-index: 0;
-      animation: float 4s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0) rotate(0deg); }
-      50%       { transform: translateY(-14px) rotate(8deg); }
-    }
-    .deco-1  { top: 10%; left:  3%;  animation-delay: 0s;    animation-duration: 4.2s; }
-    .deco-2  { top:  6%; left: 16%;  animation-delay: 0.7s;  animation-duration: 3.8s; }
-    .deco-3  { top: 14%; right: 5%;  animation-delay: 1.3s;  animation-duration: 4.5s; }
-    .deco-4  { top:  5%; right:18%;  animation-delay: 0.4s;  animation-duration: 3.6s; }
-    .deco-5  { top: 48%; left:  2%;  animation-delay: 2.0s;  animation-duration: 4.8s; }
-    .deco-6  { top: 52%; right: 3%;  animation-delay: 1.0s;  animation-duration: 4.1s; }
-    .deco-7  { top: 78%; left:  6%;  animation-delay: 0.5s;  animation-duration: 3.9s; }
-    .deco-8  { top: 82%; right: 7%;  animation-delay: 1.6s;  animation-duration: 4.4s; }
-    .deco-9  { top: 30%; left:  1%;  animation-delay: 2.4s;  animation-duration: 5.0s; }
-    .deco-10 { top: 65%; right: 2%;  animation-delay: 0.2s;  animation-duration: 3.7s; }
+    .deco { position: fixed; pointer-events: none; z-index: 0; animation: float 4s ease-in-out infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-14px) rotate(8deg); } }
+    .deco-1  { top:10%;  left:3%;   animation-delay:0s;   animation-duration:4.2s; }
+    .deco-2  { top:6%;   left:16%;  animation-delay:0.7s; animation-duration:3.8s; }
+    .deco-3  { top:14%;  right:5%;  animation-delay:1.3s; animation-duration:4.5s; }
+    .deco-4  { top:5%;   right:18%; animation-delay:0.4s; animation-duration:3.6s; }
+    .deco-5  { top:48%;  left:2%;   animation-delay:2.0s; animation-duration:4.8s; }
+    .deco-6  { top:52%;  right:3%;  animation-delay:1.0s; animation-duration:4.1s; }
+    .deco-7  { top:78%;  left:6%;   animation-delay:0.5s; animation-duration:3.9s; }
+    .deco-8  { top:82%;  right:7%;  animation-delay:1.6s; animation-duration:4.4s; }
+    .deco-9  { top:30%;  left:1%;   animation-delay:2.4s; animation-duration:5.0s; }
+    .deco-10 { top:65%;  right:2%;  animation-delay:0.2s; animation-duration:3.7s; }
   </style>
 </head>
 <body>
 
-<!-- 떠다니는 배경 장식 -->
-<!-- 동전 큰 원 -->
-<svg class="deco deco-1" width="30" height="30" viewBox="0 0 30 30">
-  <circle cx="15" cy="15" r="13" fill="#f0c840" opacity="0.25" stroke="#c8a020" stroke-width="1.5"/>
-  <text x="15" y="20" text-anchor="middle" font-size="11" font-weight="900" fill="#c8a020" opacity="0.35" font-family="Inter,sans-serif">₩</text>
-</svg>
-<!-- 별 -->
-<svg class="deco deco-2" width="20" height="20" viewBox="0 0 20 20">
-  <polygon points="10,1 12,7 19,7 13,11 15,18 10,14 5,18 7,11 1,7 8,7" fill="#a8c4e8" opacity="0.7"/>
-</svg>
-<!-- 윷 막대 -->
-<svg class="deco deco-3" width="50" height="22" viewBox="0 0 54 22" xmlns="http://www.w3.org/2000/svg">
-  <path d="M 1,3 L 53,3 Q 27,22 1,3 Z" fill="#c89040" opacity="0.22" stroke="#8b6014" stroke-width="1.3"/>
-  <line x1="1" y1="3" x2="53" y2="3" stroke="#e8c060" opacity="0.3" stroke-width="1.8" stroke-linecap="round"/>
-</svg>
-<!-- 작은 원 -->
-<svg class="deco deco-4" width="14" height="14" viewBox="0 0 14 14">
-  <circle cx="7" cy="7" r="7" fill="#8ab4d8" opacity="0.6"/>
-</svg>
-<!-- 별 큰 -->
-<svg class="deco deco-5" width="26" height="26" viewBox="0 0 26 26">
-  <polygon points="13,2 16,9 23,9 17,14 19,22 13,17 7,22 9,14 3,9 10,9" fill="#c5d8f0" opacity="0.85"/>
-</svg>
-<!-- 동전 작은 -->
-<svg class="deco deco-6" width="22" height="22" viewBox="0 0 22 22">
-  <circle cx="11" cy="11" r="9" fill="#f0c840" opacity="0.2" stroke="#c8a020" stroke-width="1.5"/>
-  <text x="11" y="15" text-anchor="middle" font-size="9" font-weight="900" fill="#c8a020" opacity="0.3" font-family="Inter,sans-serif">₩</text>
-</svg>
-<!-- 둥근 사각형 -->
-<svg class="deco deco-7" width="20" height="20" viewBox="0 0 20 20">
-  <rect x="4" y="4" width="12" height="12" rx="3" fill="#c5d8f0" opacity="0.7" transform="rotate(20 10 10)"/>
-</svg>
-<!-- 윷 막대 작은 -->
-<svg class="deco deco-8" width="40" height="16" viewBox="0 0 44 17" xmlns="http://www.w3.org/2000/svg">
-  <path d="M 1,3 L 43,3 Q 22,17 1,3 Z" fill="#c89040" opacity="0.2" stroke="#8b6014" stroke-width="1.2"/>
-  <line x1="1" y1="3" x2="43" y2="3" stroke="#e8c060" opacity="0.25" stroke-width="1.5" stroke-linecap="round"/>
-</svg>
-<!-- 마름모 -->
-<svg class="deco deco-9" width="16" height="16" viewBox="0 0 16 16">
-  <polygon points="8,1 15,8 8,15 1,8" fill="#a8c4e8" opacity="0.6"/>
-</svg>
-<!-- 별 소 -->
-<svg class="deco deco-10" width="16" height="16" viewBox="0 0 16 16">
-  <polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" fill="#c5d8f0" opacity="0.8"/>
-</svg>
+<!-- 배경 장식 -->
+<svg class="deco deco-1" width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="13" fill="#f0c840" opacity="0.25" stroke="#c8a020" stroke-width="1.5"/><text x="15" y="20" text-anchor="middle" font-size="11" font-weight="900" fill="#c8a020" opacity="0.35" font-family="Inter,sans-serif">₩</text></svg>
+<svg class="deco deco-2" width="20" height="20" viewBox="0 0 20 20"><polygon points="10,1 12,7 19,7 13,11 15,18 10,14 5,18 7,11 1,7 8,7" fill="#a8c4e8" opacity="0.7"/></svg>
+<svg class="deco deco-3" width="50" height="22" viewBox="0 0 54 22"><path d="M 1,3 L 53,3 Q 27,22 1,3 Z" fill="#c89040" opacity="0.22" stroke="#8b6014" stroke-width="1.3"/><line x1="1" y1="3" x2="53" y2="3" stroke="#e8c060" opacity="0.3" stroke-width="1.8" stroke-linecap="round"/></svg>
+<svg class="deco deco-4" width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#8ab4d8" opacity="0.6"/></svg>
+<svg class="deco deco-5" width="26" height="26" viewBox="0 0 26 26"><polygon points="13,2 16,9 23,9 17,14 19,22 13,17 7,22 9,14 3,9 10,9" fill="#c5d8f0" opacity="0.85"/></svg>
+<svg class="deco deco-6" width="22" height="22" viewBox="0 0 22 22"><circle cx="11" cy="11" r="9" fill="#f0c840" opacity="0.2" stroke="#c8a020" stroke-width="1.5"/><text x="11" y="15" text-anchor="middle" font-size="9" font-weight="900" fill="#c8a020" opacity="0.3" font-family="Inter,sans-serif">₩</text></svg>
+<svg class="deco deco-7" width="20" height="20" viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12" rx="3" fill="#c5d8f0" opacity="0.7" transform="rotate(20 10 10)"/></svg>
+<svg class="deco deco-8" width="40" height="16" viewBox="0 0 44 17"><path d="M 1,3 L 43,3 Q 22,17 1,3 Z" fill="#c89040" opacity="0.2" stroke="#8b6014" stroke-width="1.2"/><line x1="1" y1="3" x2="43" y2="3" stroke="#e8c060" opacity="0.25" stroke-width="1.5" stroke-linecap="round"/></svg>
+<svg class="deco deco-9" width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 15,8 8,15 1,8" fill="#a8c4e8" opacity="0.6"/></svg>
+<svg class="deco deco-10" width="16" height="16" viewBox="0 0 16 16"><polygon points="8,1 10,6 15,6 11,9 13,14 8,11 3,14 5,9 1,6 6,6" fill="#c5d8f0" opacity="0.8"/></svg>
 
 <nav>
   <a href="index.html" class="nav-logo">∑ 재미있는 수학 콘텐츠</a>
@@ -380,7 +347,19 @@
         <button class="count-btn"     data-n="4">4명</button>
       </div>
 
-      <div class="field-label">플레이어 이름</div>
+      <div class="field-label">던지는 도구 개수</div>
+      <div class="count-row" id="toolCountRow">
+        <button class="count-btn" data-tc="1">1개</button>
+        <button class="count-btn sel" data-tc="2">2개</button>
+      </div>
+
+      <div class="field-label">윷놀이판 종류</div>
+      <div class="count-row" id="boardTypeRow">
+        <button class="count-btn sel" data-bt="1">① 심플형<br><small style="font-weight:500;font-size:0.72rem;">원형 10칸</small></button>
+        <button class="count-btn"     data-bt="2">② 전통 윷놀이판<br><small style="font-weight:500;font-size:0.72rem;">지름길 있음</small></button>
+      </div>
+
+      <div class="field-label">플레이어 이름 및 도구</div>
       <div class="name-list" id="nameList"></div>
 
       <button class="btn-primary" onclick="startGame()">게임 시작 🚀</button>
@@ -391,50 +370,27 @@
 <!-- ── GAME ── -->
 <div id="screen-game" class="screen">
   <div class="game-wrap">
-
     <div class="board-col">
+
       <!-- Turn banner -->
       <div class="turn-banner">
         <div class="turn-dot" id="turnDot"></div>
-        <div>
+        <div class="turn-info">
           <h2 id="turnName">—</h2>
-          <small id="turnHint">도구와 전진 방향을 선택하세요</small>
+          <small id="turnHint">전진 방향을 선택하세요</small>
         </div>
+        <div id="turnTool" class="turn-tool-badge"></div>
       </div>
 
       <!-- Board -->
       <div class="board-card">
         <div id="board">
-          <div class="board-label">확률<br>윷놀이</div>
+          <div class="board-label" id="boardLabel">확률<br>윷놀이</div>
         </div>
       </div>
 
       <!-- Controls -->
       <div class="ctrl-card">
-        <div>
-          <div class="ctrl-label">던질 도구 선택</div>
-          <div class="tool-row">
-            <div class="tool-card" data-tool="cc" onclick="pickTool('cc')">
-              <div class="t-icons"><span class="coin-ico">🪙</span><span class="coin-ico">🪙</span></div>
-              <div class="t-lbl">동전 × 2</div>
-            </div>
-            <div class="tool-card" data-tool="yy" onclick="pickTool('yy')">
-              <div class="t-icons">
-                <svg width="28" height="13" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
-                <svg width="28" height="13" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
-              </div>
-              <div class="t-lbl">윷 × 2</div>
-            </div>
-            <div class="tool-card" data-tool="cy" onclick="pickTool('cy')">
-              <div class="t-icons">
-                <span class="coin-ico">🪙</span>
-                <svg width="28" height="13" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
-              </div>
-              <div class="t-lbl">동전 + 윷</div>
-            </div>
-          </div>
-        </div>
-
         <div>
           <div class="ctrl-label">전진 기준</div>
           <div class="dir-row">
@@ -446,10 +402,17 @@
         <button class="btn-throw" id="btnThrow" onclick="doThrow()" disabled>🎲 던지기</button>
 
         <div class="result-card" id="resultCard">
-          <span class="r-placeholder">도구와 방향을 선택 후 던져보세요.</span>
+          <span class="r-placeholder">방향을 선택 후 던져보세요.</span>
         </div>
 
-        <button class="btn-next" id="btnNext" onclick="nextTurn()">다음 플레이어 턴 →</button>
+        <!-- Shortcut choice (board 2 only, hidden by default) -->
+        <div class="shortcut-card" id="shortcutCard" style="display:none;">
+          <div class="ctrl-label">⚡ 지름길 분기점에 도착했습니다!</div>
+          <div class="dir-row">
+            <button class="dir-btn" onclick="chooseRoute('outer')">🔄 외곽으로 계속</button>
+            <button class="dir-btn shortcut-opt" onclick="chooseRoute('shortcut')">⚡ 지름길 타기</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -462,52 +425,42 @@
 
       <div class="side-card">
         <h3>📊 누적 던지기 통계</h3>
-
         <div class="stat-block">
           <div class="stat-head">
-            <span class="coin-ico" style="font-size:1rem;">🪙</span>
+            <span style="font-size:1rem;">🪙</span>
             <span class="stat-tool-name">동전</span>
             <span class="stat-cnt" id="coinTot">총 0회</span>
           </div>
           <div class="stat-row">
-            <div class="stat-rh">
-              <span class="stat-rl">앞면</span>
-              <span class="stat-rv" id="coinFv">0회 (—)</span>
-            </div>
+            <div class="stat-rh"><span class="stat-rl">앞면</span><span class="stat-rv" id="coinFv">0회 (—)</span></div>
             <div class="stat-track"><div class="stat-fill fill-front" id="coinFbar"></div></div>
           </div>
           <div class="stat-row">
-            <div class="stat-rh">
-              <span class="stat-rl">뒷면</span>
-              <span class="stat-rv" id="coinBv">0회 (—)</span>
-            </div>
+            <div class="stat-rh"><span class="stat-rl">뒷면</span><span class="stat-rv" id="coinBv">0회 (—)</span></div>
             <div class="stat-track"><div class="stat-fill fill-back" id="coinBbar"></div></div>
           </div>
         </div>
-
         <hr class="stat-divider" />
-
         <div class="stat-block">
           <div class="stat-head">
-            <svg width="20" height="9" viewBox="0 0 38 14" xmlns="http://www.w3.org/2000/svg" style="display:inline-block;vertical-align:middle"><path d="M 1,2 L 37,2 Q 19,14 1,2 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.5"/><line x1="1" y1="2" x2="37" y2="2" stroke="#e8c060" stroke-width="2" stroke-linecap="round"/></svg>
-            <span class="stat-tool-name" style="margin-left:5px;">윷</span>
+            <img src="../image/yut_round.png" style="height:18px;width:auto;vertical-align:middle;" alt="윷">
+            <span class="stat-tool-name" style="margin-left:4px;">윷</span>
             <span class="stat-cnt" id="yutTot">총 0회</span>
           </div>
           <div class="stat-row">
-            <div class="stat-rh">
-              <span class="stat-rl">앞면 (평면)</span>
-              <span class="stat-rv" id="yutFv">0회 (—)</span>
-            </div>
+            <div class="stat-rh"><span class="stat-rl">앞면 (평면)</span><span class="stat-rv" id="yutFv">0회 (—)</span></div>
             <div class="stat-track"><div class="stat-fill fill-front" id="yutFbar"></div></div>
           </div>
           <div class="stat-row">
-            <div class="stat-rh">
-              <span class="stat-rl">뒷면 (둥근면)</span>
-              <span class="stat-rv" id="yutBv">0회 (—)</span>
-            </div>
+            <div class="stat-rh"><span class="stat-rl">뒷면 (둥근면)</span><span class="stat-rv" id="yutBv">0회 (—)</span></div>
             <div class="stat-track"><div class="stat-fill fill-back" id="yutBbar"></div></div>
           </div>
         </div>
+      </div>
+
+      <!-- 윷 설명 이미지 -->
+      <div class="explain-card">
+        <img src="../image/yut_explain.png" alt="윷 설명" />
       </div>
     </div>
   </div>
@@ -541,54 +494,150 @@
 <div id="toast"></div>
 
 <script>
-  /* ── CONSTANTS (never shown in UI) ── */
-  const P = { coin: 0.5, yut: 0.4 };
+  /* ── CONSTANTS ── */
+  const PROB   = { coin: 0.5, yut: 0.4 };
   const COLORS = ['#e05050','#4a7aaa','#3aaa70','#9050c8'];
-  const N = 10; // board spaces
-  const R = 108, CX = 140, CY = 140; // board geometry
+  const TOOL_LIST = {
+    c:  ['coin'],
+    y:  ['yut'],
+    cc: ['coin','coin'],
+    yy: ['yut','yut'],
+    cy: ['coin','yut']
+  };
 
-  /* ── STATE ── */
+  /* ── BOARD 1: circular 10-space ── */
+  const B1_N = 10, B1_R = 108, B1_CX = 140, B1_CY = 140;
+  function b1Route() { return Array.from({length:B1_N},(_,i)=>i).concat(['done']); }
+
+  /* ── BOARD 2: traditional square with shortcuts ── */
+  // 16 outer spaces (0–15) + shortcut spaces
+  const B2_OUTER_COORDS = {
+    0:  {x:252,y:252,label:'출발',type:'go'},
+    1:  {x:196,y:252,label:'1',  type:'normal'},
+    2:  {x:140,y:252,label:'2',  type:'normal'},
+    3:  {x:84, y:252,label:'3',  type:'normal'},
+    4:  {x:28, y:252,label:'⬟', type:'corner'},
+    5:  {x:28, y:196,label:'5',  type:'normal'},
+    6:  {x:28, y:140,label:'6',  type:'normal'},
+    7:  {x:28, y:84, label:'7',  type:'normal'},
+    8:  {x:28, y:28, label:'⬟', type:'corner'},
+    9:  {x:84, y:28, label:'9',  type:'normal'},
+    10: {x:140,y:28, label:'10', type:'normal'},
+    11: {x:196,y:28, label:'11', type:'normal'},
+    12: {x:252,y:28, label:'⬟', type:'corner'},
+    13: {x:252,y:84, label:'13', type:'normal'},
+    14: {x:252,y:140,label:'14', type:'normal'},
+    15: {x:252,y:196,label:'15', type:'normal'},
+  };
+  const B2_SC_COORDS = {
+    sA1:    {x:65, y:215,label:'·',type:'shortcut'},
+    sA2:    {x:103,y:178,label:'·',type:'shortcut'},
+    sB1:    {x:65, y:65, label:'·',type:'shortcut'},
+    sB2:    {x:103,y:103,label:'·',type:'shortcut'},
+    center: {x:140,y:140,label:'✦',type:'center-sp'},
+    sO1:    {x:178,y:178,label:'·',type:'shortcut'},
+    sO2:    {x:215,y:215,label:'·',type:'shortcut'},
+  };
+  const B2_ALL_COORDS = {...B2_OUTER_COORDS, ...B2_SC_COORDS};
+
+  // Routes
+  const B2_OUTER_RT  = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,'done'];
+  const B2_SHORT4_RT = [4,'sA1','sA2','center','sO1','sO2','done'];
+  const B2_SHORT8_RT = [8,'sB1','sB2','center','sO1','sO2','done'];
+
+  function b2Route() { return [...B2_OUTER_RT]; }
+
+  /* ── SETUP STATE ── */
+  let pCount    = 2;
+  let toolCount = 2;
+  let boardType = 1;
+  const playerTools = ['cc','cc','cc','cc'];
+
+  /* ── GAME STATE ── */
   let G = {};
-
   function initState(players) {
     G = {
-      players,
-      cur: 0,
-      tool: null, dir: null,
-      stats: { coin: { t:0, f:0 }, yut: { t:0, f:0 } },
-      winner: null
+      players, cur: 0, dir: null, boardType,
+      stats: { coin:{t:0,f:0}, yut:{t:0,f:0} },
+      winner: null, awaitingShortcut: false
     };
   }
 
-  /* ── SETUP ── */
-  let pCount = 2;
-
+  /* ── SETUP EVENT LISTENERS ── */
   document.getElementById('countRow').addEventListener('click', e => {
     const btn = e.target.closest('.count-btn');
     if (!btn) return;
     pCount = +btn.dataset.n;
-    document.querySelectorAll('.count-btn').forEach(b => b.classList.toggle('sel', b === btn));
+    document.querySelectorAll('#countRow .count-btn').forEach(b => b.classList.toggle('sel', b === btn));
     buildNameInputs();
   });
+  document.getElementById('toolCountRow').addEventListener('click', e => {
+    const btn = e.target.closest('.count-btn');
+    if (!btn) return;
+    toolCount = +btn.dataset.tc;
+    document.querySelectorAll('#toolCountRow .count-btn').forEach(b => b.classList.toggle('sel', b === btn));
+    buildNameInputs();
+  });
+  document.getElementById('boardTypeRow').addEventListener('click', e => {
+    const btn = e.target.closest('.count-btn');
+    if (!btn) return;
+    boardType = +btn.dataset.bt;
+    document.querySelectorAll('#boardTypeRow .count-btn').forEach(b => b.classList.toggle('sel', b === btn));
+  });
+
+  /* ── NAME + TOOL INPUTS ── */
+  const YI = `<img src="../image/yut_round.png" alt="윷">`;  // small in CSS via .tool-sel-btn img
+  const CI = `<span style="font-size:1rem;line-height:1;">🪙</span>`;
+
+  const TOOL_OPTS_1 = [
+    {key:'c', html: CI  + ' 동전'},
+    {key:'y', html: YI  + ' 윷'},
+  ];
+  const TOOL_OPTS_2 = [
+    {key:'cc', html: CI + CI + ' 동전×2'},
+    {key:'yy', html: YI + YI + ' 윷×2'},
+    {key:'cy', html: CI + YI + ' 동전+윷'},
+  ];
+
+  function defaultToolKey() { return toolCount === 1 ? 'c' : 'cc'; }
 
   function buildNameInputs() {
-    const el = document.getElementById('nameList');
+    for (let i = 0; i < 4; i++) playerTools[i] = defaultToolKey();
+    const el   = document.getElementById('nameList');
     el.innerHTML = '';
+    const opts = toolCount === 1 ? TOOL_OPTS_1 : TOOL_OPTS_2;
+    const def  = defaultToolKey();
     for (let i = 0; i < pCount; i++) {
       const row = document.createElement('div');
       row.className = 'name-row';
+      const btns = opts.map(o =>
+        `<button class="tool-sel-btn ${o.key === def ? 'sel':''}"
+                 data-pi="${i}" data-tk="${o.key}"
+                 onclick="pickPlayerTool(${i},'${o.key}',this)">${o.html}</button>`
+      ).join('');
       row.innerHTML = `
         <div class="p-dot" style="background:${COLORS[i]}"></div>
-        <input class="name-input" id="pn${i}" value="플레이어 ${i+1}" placeholder="플레이어 ${i+1}" />`;
+        <input class="name-input" id="pn${i}" value="플레이어 ${i+1}" placeholder="플레이어 ${i+1}">
+        <div class="tool-sel">${btns}</div>`;
       el.appendChild(row);
     }
   }
 
+  function pickPlayerTool(pi, tk, btn) {
+    playerTools[pi] = tk;
+    document.querySelectorAll(`.tool-sel-btn[data-pi="${pi}"]`)
+      .forEach(b => b.classList.toggle('sel', b.dataset.tk === tk));
+  }
+
+  /* ── START GAME ── */
   function startGame() {
-    const players = Array.from({ length: pCount }, (_, i) => ({
-      name: (document.getElementById(`pn${i}`)?.value.trim() || `플레이어 ${i+1}`),
-      pos: 0,
-      color: COLORS[i]
+    const makeRoute = () => boardType === 2 ? b2Route() : b1Route();
+    const players = Array.from({length: pCount}, (_, i) => ({
+      name:     document.getElementById(`pn${i}`)?.value.trim() || `플레이어 ${i+1}`,
+      color:    COLORS[i],
+      toolKey:  playerTools[i],
+      route:    makeRoute(),
+      routeIdx: 0
     }));
     initState(players);
     show('game');
@@ -597,84 +646,134 @@
     resetControls();
   }
 
-  /* ── BOARD ── */
+  /* ── BOARD BUILDING ── */
   function buildBoard() {
     const board = document.getElementById('board');
-    board.querySelectorAll('.b-space').forEach(el => el.remove());
-    for (let i = 0; i < N; i++) {
-      const a = Math.PI/2 - (i/N) * 2 * Math.PI;
-      const x = CX + R * Math.cos(a);
-      const y = CY + R * Math.sin(a);
+    board.querySelectorAll('.b-space, .board-svg').forEach(el => el.remove());
+    G.boardType === 2 ? buildBoard2(board) : buildBoard1(board);
+  }
+
+  function buildBoard1(board) {
+    document.getElementById('boardLabel').style.display = '';
+    for (let i = 0; i < B1_N; i++) {
+      const a  = Math.PI/2 - (i/B1_N)*2*Math.PI;
+      const x  = B1_CX + B1_R * Math.cos(a);
+      const y  = B1_CY + B1_R * Math.sin(a);
       const sp = document.createElement('div');
       sp.className = 'b-space' + (i === 0 ? ' go' : '');
       sp.id = `sp${i}`;
-      sp.style.cssText = `left:${x-21}px; top:${y-21}px;`;
+      sp.style.cssText = `left:${x-21}px;top:${y-21}px;`;
       sp.innerHTML = `<span class="b-num">${i === 0 ? '출발' : i}</span>`;
       board.appendChild(sp);
     }
   }
 
+  function buildBoard2(board) {
+    document.getElementById('boardLabel').style.display = 'none';
+
+    // SVG overlay: outer square + two diagonals
+    const ns  = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns,'svg');
+    svg.setAttribute('width','280'); svg.setAttribute('height','280');
+    svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:0;';
+    svg.classList.add('board-svg');
+
+    const mkEl = (tag, attrs) => {
+      const el = document.createElementNS(ns, tag);
+      Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k,v));
+      return el;
+    };
+
+    // outer square
+    svg.appendChild(mkEl('rect',{x:'28',y:'28',width:'224',height:'224',
+      fill:'none',stroke:'#b8d4f0','stroke-width':'2'}));
+
+    // diagonal 1: bottom-left (28,252) → top-right (252,28)  [shortcut from corner 4]
+    svg.appendChild(mkEl('line',{x1:'28',y1:'252',x2:'252',y2:'28',
+      stroke:'#e8c860','stroke-width':'1.8','stroke-dasharray':'7,4',opacity:'0.75'}));
+
+    // diagonal 2: top-left (28,28) → bottom-right (252,252)  [shortcut from corner 8]
+    svg.appendChild(mkEl('line',{x1:'28',y1:'28',x2:'252',y2:'252',
+      stroke:'#e8c860','stroke-width':'1.8','stroke-dasharray':'7,4',opacity:'0.75'}));
+
+    board.appendChild(svg);
+
+    // Place all spaces
+    Object.entries(B2_ALL_COORDS).forEach(([key, info]) => {
+      const sp = document.createElement('div');
+      sp.className = {
+        go:        'b-space go',
+        corner:    'b-space corner',
+        shortcut:  'b-space shortcut',
+        'center-sp':'b-space center-sp',
+        normal:    'b-space',
+      }[info.type] || 'b-space';
+      sp.id = `sp${key}`;
+      sp.style.cssText = `left:${info.x-21}px;top:${info.y-21}px;z-index:1;`;
+      sp.innerHTML = `<span class="b-num">${info.label}</span>`;
+      board.appendChild(sp);
+    });
+  }
+
+  /* ── TOKEN PLACEMENT ── */
+  function getCurrentPos(p) { return p.route[p.routeIdx]; }
+
   function placeTokens() {
     document.querySelectorAll('.p-token').forEach(t => t.remove());
     const groups = {};
     G.players.forEach((p, i) => {
-      const key = p.pos >= N ? 'done' : p.pos;
-      if (key !== 'done') (groups[key] = groups[key]||[]).push({ p, i });
+      const pos = getCurrentPos(p);
+      if (pos !== 'done') {
+        const key = String(pos);
+        (groups[key] = groups[key]||[]).push({p, i});
+      }
     });
     const offs = [[-6,-6],[6,-6],[-6,6],[6,6],[0,0]];
-    Object.entries(groups).forEach(([pos, arr]) => {
-      const sp = document.getElementById(`sp${pos}`);
+    Object.entries(groups).forEach(([posKey, arr]) => {
+      const sp = document.getElementById(`sp${posKey}`);
       if (!sp) return;
-      arr.forEach(({ p, i }, nth) => {
+      arr.forEach(({p, i}, nth) => {
         const tk = document.createElement('div');
         tk.className = 'p-token';
-        tk.id = `tk${i}`;
         tk.style.background = p.color;
         const [ox, oy] = offs[Math.min(nth, offs.length-1)];
-        tk.style.left = (21 - 6.5 + ox) + 'px';
-        tk.style.top  = (21 - 6.5 + oy) + 'px';
+        tk.style.left = (21-6.5+ox)+'px';
+        tk.style.top  = (21-6.5+oy)+'px';
         sp.appendChild(tk);
       });
     });
   }
 
   /* ── CONTROLS ── */
-  function pickTool(t) {
-    G.tool = t;
-    document.querySelectorAll('.tool-card').forEach(c => c.classList.toggle('sel', c.dataset.tool === t));
-    checkReady();
-  }
   function pickDir(d) {
     G.dir = d;
     document.querySelectorAll('.dir-btn').forEach(b => b.classList.toggle('sel', b.dataset.dir === d));
-    checkReady();
+    document.getElementById('btnThrow').disabled = false;
   }
-  function checkReady() {
-    document.getElementById('btnThrow').disabled = !(G.tool && G.dir);
-  }
+
   function resetControls() {
-    G.tool = G.dir = null;
-    document.querySelectorAll('.tool-card, .dir-btn').forEach(el => el.classList.remove('sel'));
+    G.dir = null;
+    G.awaitingShortcut = false;
+    document.querySelectorAll('.dir-btn').forEach(el => el.classList.remove('sel'));
     document.getElementById('btnThrow').disabled = true;
-    document.getElementById('btnNext').classList.remove('on');
-    document.getElementById('resultCard').innerHTML = '<span class="r-placeholder">도구와 방향을 선택 후 던져보세요.</span>';
-    document.getElementById('turnHint').textContent = '도구와 전진 방향을 선택하세요';
+    document.getElementById('shortcutCard').style.display = 'none';
+    document.getElementById('resultCard').innerHTML = '<span class="r-placeholder">방향을 선택 후 던져보세요.</span>';
+    document.getElementById('turnHint').textContent = '전진 방향을 선택하세요';
   }
 
   /* ── THROW ── */
-  const toolList = { cc:['coin','coin'], yy:['yut','yut'], cy:['coin','yut'] };
-
-  function throwOne(type) { return Math.random() < P[type] ? 'front' : 'back'; }
+  function throwOne(type) { return Math.random() < PROB[type] ? 'front' : 'back'; }
 
   async function doThrow() {
+    if (G.awaitingShortcut) return;
     document.getElementById('btnThrow').disabled = true;
-    document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.style.pointerEvents = 'none');
+    document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = 'none');
 
-    const tools   = toolList[G.tool];
-    const results = tools.map(t => ({ type: t, result: throwOne(t) }));
+    const cp      = G.players[G.cur];
+    const tools   = TOOL_LIST[cp.toolKey];
+    const results = tools.map(t => ({type:t, result:throwOne(t)}));
 
-    // accumulate stats
-    results.forEach(({ type, result }) => {
+    results.forEach(({type, result}) => {
       G.stats[type].t++;
       if (result === 'front') G.stats[type].f++;
     });
@@ -682,16 +781,14 @@
     await showThrowAnim(results);
 
     const match = results.filter(r => r.result === G.dir).length;
-    const bonus = match === 2;
-    const cp    = G.players[G.cur];
+    const bonus = tools.length === 2 && match === 2;
 
-    cp.pos = Math.min(cp.pos + match, N);
-
+    cp.routeIdx = Math.min(cp.routeIdx + match, cp.route.length - 1);
     renderAll();
 
-    // Show result chips
-    const lbl  = { coin:'동전', yut:'윷' };
-    const face = { front:'앞면', back:'뒷면' };
+    // Result chips
+    const lbl  = {coin:'동전', yut:'윷'};
+    const face = {front:'앞면', back:'뒷면'};
     let html = results.map(r =>
       `<div class="r-chip ${r.result}">
         <span class="r-chip-type">${lbl[r.type]}</span>
@@ -701,23 +798,51 @@
     if (bonus) html += `<span class="r-bonus">🎉 한 번 더!</span>`;
     document.getElementById('resultCard').innerHTML = html;
 
+    document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
+
     // Win check
-    if (cp.pos >= N) { setTimeout(() => endGame(), 600); return; }
+    if (getCurrentPos(cp) === 'done') { setTimeout(endGame, 600); return; }
+
+    // Shortcut check (board 2, corners 4 & 8)
+    const pos = getCurrentPos(cp);
+    if (G.boardType === 2 && (pos === 4 || pos === 8)) {
+      G.awaitingShortcut = true;
+      document.getElementById('shortcutCard').style.display = 'flex';
+      document.getElementById('turnHint').textContent = '⚡ 지름길 분기점에 도착!';
+      return;
+    }
 
     if (bonus) {
-      document.getElementById('turnHint').textContent = '🎉 2칸 이동! 한 번 더 던지세요!';
-      document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.style.pointerEvents = '');
-      G.tool = G.dir = null;
-      document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.classList.remove('sel'));
+      document.getElementById('turnHint').textContent = '🎉 한 번 더 던지세요!';
+      G.dir = null;
+      document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('sel'));
       document.getElementById('btnThrow').disabled = true;
     } else {
-      document.querySelectorAll('.tool-card,.dir-btn').forEach(el => el.style.pointerEvents = '');
-      document.getElementById('btnNext').classList.add('on');
+      document.getElementById('turnHint').textContent = '⏳ 다음 플레이어로 넘어갑니다…';
+      setTimeout(nextTurn, 1500);
     }
   }
 
+  function chooseRoute(choice) {
+    const p   = G.players[G.cur];
+    const pos = getCurrentPos(p);
+    if (choice === 'shortcut') {
+      if (pos === 4) { p.route = [...B2_SHORT4_RT]; p.routeIdx = 0; }
+      if (pos === 8) { p.route = [...B2_SHORT8_RT]; p.routeIdx = 0; }
+      showToast('⚡ 지름길을 선택했습니다!');
+      placeTokens();
+    }
+    G.awaitingShortcut = false;
+    document.getElementById('shortcutCard').style.display = 'none';
+    setTimeout(nextTurn, 600);
+  }
+
   function nextTurn() {
-    G.cur = (G.cur + 1) % G.players.length;
+    let tries = 0;
+    do {
+      G.cur = (G.cur + 1) % G.players.length;
+      tries++;
+    } while (getCurrentPos(G.players[G.cur]) === 'done' && tries < G.players.length);
     resetControls();
     renderAll();
   }
@@ -728,35 +853,44 @@
   async function showThrowAnim(results) {
     const overlay = document.getElementById('throwOverlay');
     const popup   = document.getElementById('throwPopup');
-    const lbl     = { coin:'동전', yut:'윷' };
-    const face    = { front:'앞면', back:'뒷면' };
-
+    const face    = {front:'앞면', back:'뒷면'};
     popup.innerHTML = results.map(r => `
       <div class="throw-item">
         ${r.type === 'coin'
           ? '<div class="throw-ico">🪙</div>'
-          : '<svg width="50" height="20" viewBox="0 0 54 22" xmlns="http://www.w3.org/2000/svg" class="yut-ico-lg"><path d="M 1,3 L 53,3 Q 27,22 1,3 Z" fill="#c89040" stroke="#8b6014" stroke-width="1.8"/><line x1="1" y1="3" x2="53" y2="3" stroke="#e8c060" stroke-width="2.5" stroke-linecap="round"/></svg>'}
+          : '<img src="../image/yut_round.png" class="throw-yut-img" alt="윷">'}
         <div class="throw-face ${r.result}">${face[r.result]}</div>
       </div>`).join('');
-
     overlay.classList.add('on');
     await sleep(850);
     overlay.classList.remove('on');
   }
 
   /* ── RENDER ── */
-  function renderAll() {
-    // Turn banner
-    const cp = G.players[G.cur];
-    document.getElementById('turnName').textContent = cp.name + '의 턴';
-    document.getElementById('turnDot').style.background = cp.color;
+  function toolBadgeHtml(key) {
+    const yi = `<img src="../image/yut_round.png" style="height:14px;width:auto;vertical-align:middle;" alt="윷">`;
+    const ci = `<span style="font-size:0.9rem;">🪙</span>`;
+    return {c:ci, y:yi, cc:ci+ci, yy:yi+yi, cy:ci+yi}[key] || '';
+  }
 
-    // Player list
+  function posLabel(p) {
+    const pos = getCurrentPos(p);
+    if (pos === 'done')          return '완주 🏆';
+    if (typeof pos === 'number') return pos + '칸';
+    return '지름길 중…';
+  }
+
+  function renderAll() {
+    const cp = G.players[G.cur];
+    document.getElementById('turnName').textContent   = cp.name + '의 턴';
+    document.getElementById('turnDot').style.background = cp.color;
+    document.getElementById('turnTool').innerHTML     = toolBadgeHtml(cp.toolKey);
+
     document.getElementById('pList').innerHTML = G.players.map((p, i) => `
       <div class="p-row ${i === G.cur ? 'cur' : ''}">
         <div class="p-row-dot" style="background:${p.color}"></div>
         <span class="p-row-name">${p.name}</span>
-        <span class="p-row-pos">${p.pos >= N ? '완주 🏆' : p.pos + '칸'}</span>
+        <span class="p-row-pos">${posLabel(p)}</span>
       </div>`).join('');
 
     placeTokens();
@@ -765,75 +899,71 @@
 
   /* ── STATS ── */
   function updateStats() {
-    const pct = (n, t) => t > 0 ? `${n}회 (${(n/t*100).toFixed(1)}%)` : '0회 (—)';
-    const bar = (n, t) => t > 0 ? (n/t*100).toFixed(1) : 0;
-
-    const { coin, yut } = G.stats;
-    const cb = coin.t - coin.f, yb = yut.t - yut.f;
-
+    const pct = (n,t) => t>0 ? `${n}회 (${(n/t*100).toFixed(1)}%)` : '0회 (—)';
+    const bar = (n,t) => t>0 ? (n/t*100).toFixed(1) : 0;
+    const {coin, yut} = G.stats;
+    const cb = coin.t-coin.f, yb = yut.t-yut.f;
     document.getElementById('coinTot').textContent  = `총 ${coin.t}회`;
-    document.getElementById('coinFv').textContent   = pct(coin.f, coin.t);
-    document.getElementById('coinBv').textContent   = pct(cb, coin.t);
-    document.getElementById('coinFbar').style.width = bar(coin.f, coin.t) + '%';
-    document.getElementById('coinBbar').style.width = bar(cb, coin.t) + '%';
-
+    document.getElementById('coinFv').textContent   = pct(coin.f,coin.t);
+    document.getElementById('coinBv').textContent   = pct(cb,coin.t);
+    document.getElementById('coinFbar').style.width = bar(coin.f,coin.t)+'%';
+    document.getElementById('coinBbar').style.width = bar(cb,coin.t)+'%';
     document.getElementById('yutTot').textContent  = `총 ${yut.t}회`;
-    document.getElementById('yutFv').textContent   = pct(yut.f, yut.t);
-    document.getElementById('yutBv').textContent   = pct(yb, yut.t);
-    document.getElementById('yutFbar').style.width = bar(yut.f, yut.t) + '%';
-    document.getElementById('yutBbar').style.width = bar(yb, yut.t) + '%';
+    document.getElementById('yutFv').textContent   = pct(yut.f,yut.t);
+    document.getElementById('yutBv').textContent   = pct(yb,yut.t);
+    document.getElementById('yutFbar').style.width = bar(yut.f,yut.t)+'%';
+    document.getElementById('yutBbar').style.width = bar(yb,yut.t)+'%';
   }
 
   /* ── GAME OVER ── */
   function endGame() {
     G.winner = G.cur;
     const cp = G.players[G.cur];
-    const { coin, yut } = G.stats;
-    const cb = coin.t - coin.f, yb = yut.t - yut.f;
-    const pct = (n, t) => t > 0 ? `${n}회 (${(n/t*100).toFixed(1)}%)` : '0회';
-
+    const {coin, yut} = G.stats;
+    const cb = coin.t-coin.f, yb = yut.t-yut.f;
+    const pct = (n,t) => t>0 ? `${n}회 (${(n/t*100).toFixed(1)}%)` : '0회';
     document.getElementById('overWinner').innerHTML =
       `<span style="color:${cp.color}">🎉 ${cp.name}</span> 우승!`;
-    document.getElementById('oCF').textContent = pct(coin.f, coin.t);
-    document.getElementById('oCB').textContent = pct(cb, coin.t);
-    document.getElementById('oYF').textContent = pct(yut.f, yut.t);
-    document.getElementById('oYB').textContent = pct(yb, yut.t);
-
+    document.getElementById('oCF').textContent = pct(coin.f,coin.t);
+    document.getElementById('oCB').textContent = pct(cb,coin.t);
+    document.getElementById('oYF').textContent = pct(yut.f,yut.t);
+    document.getElementById('oYB').textContent = pct(yb,yut.t);
     show('over');
   }
 
   /* ── GOOGLE SHEETS ── */
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ24Cd_v_dFCORrRwnzp9OXeomowRL1D-wkXbKlDTs0QAm583KQiY-BUXx9l4fXpybTg/exec';
-
   function saveToSheets() {
-    const { coin, yut } = G.stats;
+    const {coin, yut} = G.stats;
     const winner = G.players[G.winner];
     fetch(SCRIPT_URL, {
-      method: 'POST', mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        type: 'yut_game',
-        winner: winner.name,
-        playerCount: G.players.length,
-        coinTotal: coin.t, coinFront: coin.f, coinBack: coin.t - coin.f,
-        yutTotal:  yut.t, yutFront:  yut.f, yutBack:  yut.t - yut.f
+        type:'yut_game', winner:winner.name,
+        playerCount:G.players.length, boardType:G.boardType,
+        coinTotal:coin.t, coinFront:coin.f, coinBack:coin.t-coin.f,
+        yutTotal:yut.t,  yutFront:yut.f,  yutBack:yut.t-yut.f
       })
     })
-    .then(() => showToast('구글 시트에 기록되었습니다!'))
-    .catch(() => showToast('저장 중 오류가 발생했습니다.'));
+    .then(()=>showToast('구글 시트에 기록되었습니다!'))
+    .catch(()=>showToast('저장 중 오류가 발생했습니다.'));
   }
 
   /* ── UTILS ── */
   function show(name) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen-' + name).classList.add('active');
+    document.getElementById('screen-'+name).classList.add('active');
   }
   function showToast(msg) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.classList.add('on');
-    setTimeout(() => t.classList.remove('on'), 2600);
+    setTimeout(()=>t.classList.remove('on'), 2600);
   }
-  function goSetup() { show('setup'); }
+  function goSetup() {
+    show('setup');
+    buildNameInputs();
+  }
 
   /* ── INIT ── */
   buildNameInputs();
