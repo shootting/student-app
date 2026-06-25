@@ -1101,8 +1101,10 @@
     if (getCurrentPos(cp) === 'done') { setTimeout(endGame, 600); return; }
 
     // Shortcut check (board 2, corners 4, 8, 12)
+    // onOuterRoute: 외곽 루트는 숫자와 'done'만 포함. 이미 지름길 루트면 문자열 키(sA1 등)가 들어있음
     const pos = getCurrentPos(cp);
-    if (G.boardType === 2 && (pos === 4 || pos === 8 || pos === 12)) {
+    const onOuterRoute = !cp.route.some(s => s !== 'done' && typeof s === 'string');
+    if (G.boardType === 2 && onOuterRoute && (pos === 4 || pos === 8 || pos === 12)) {
       G.shortcutThrow = true;
       const toolLen  = tools.length;
       const condHtml = toolLen === 1
