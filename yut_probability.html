@@ -161,10 +161,22 @@
 
     /* Result */
     .result-card {
-      background: #f8fbff; border-radius: 12px; padding: 0.9rem 1rem;
-      border: 1.5px solid #ddeeff; min-height: 58px;
-      display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+      background: #f8fbff; border-radius: 12px; padding: 0.75rem 1rem;
+      border: 1.5px solid #ddeeff; min-height: 58px; max-height: 260px;
+      overflow-y: auto; display: flex; flex-direction: column; gap: 0.55rem;
     }
+    .result-entry {
+      display: flex; flex-direction: column; gap: 0.3rem;
+      padding-bottom: 0.5rem; border-bottom: 1px solid #e4eeff;
+    }
+    .result-entry:last-child { border-bottom: none; padding-bottom: 0; }
+    .result-entry-header {
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .result-entry-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .result-entry-name { font-size: 0.74rem; font-weight: 800; }
+    .result-entry-new  { font-size: 0.62rem; font-weight: 600; color: var(--accent); background: var(--blue); border-radius: 4px; padding: 0.1rem 0.35rem; }
+    .result-entry-chips { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
     .r-chip {
       display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
       padding: 0.4rem 0.7rem; border-radius: 8px; min-width: 52px; text-align: center;
@@ -175,10 +187,10 @@
     .r-chip-face  { font-size: 0.85rem; font-weight: 800; }
     .r-chip.front .r-chip-face { color: #9a7010; }
     .r-chip.back  .r-chip-face { color: #3a6a9a; }
-    .r-move { font-size: 0.88rem; font-weight: 800; color: var(--black); }
-    .r-bonus { font-size: 0.8rem; font-weight: 700; color: #d03030; animation: blink 0.7s ease infinite alternate; }
+    .r-move { font-size: 0.82rem; font-weight: 800; color: var(--black); }
+    .r-bonus { font-size: 0.78rem; font-weight: 700; color: #d03030; animation: blink 0.7s ease infinite alternate; }
     @keyframes blink { from { opacity: 0.6; } to { opacity: 1; } }
-    .r-placeholder { font-size: 0.8rem; color: #bbb; }
+    .r-placeholder { font-size: 0.8rem; color: #bbb; align-self: center; }
 
     /* Shortcut card */
     .shortcut-card {
@@ -559,7 +571,8 @@
     G = {
       players, cur: 0, dir: null, boardType,
       stats: { coin:{t:0,f:0}, yut:{t:0,f:0} },
-      winner: null, awaitingShortcut: false
+      winner: null, awaitingShortcut: false,
+      throwLog: []
     };
   }
 
@@ -757,8 +770,36 @@
     document.querySelectorAll('.dir-btn').forEach(el => el.classList.remove('sel'));
     document.getElementById('btnThrow').disabled = true;
     document.getElementById('shortcutCard').style.display = 'none';
-    document.getElementById('resultCard').innerHTML = '<span class="r-placeholder">방향을 선택 후 던져보세요.</span>';
     document.getElementById('turnHint').textContent = '전진 방향을 선택하세요';
+    renderLog();
+  }
+
+  function renderLog() {
+    const card = document.getElementById('resultCard');
+    if (!G.throwLog || G.throwLog.length === 0) {
+      card.innerHTML = '<span class="r-placeholder">방향을 선택 후 던져보세요.</span>';
+      return;
+    }
+    const lbl  = {coin:'동전', yut:'윷'};
+    const face = {front:'앞면', back:'뒷면'};
+    card.innerHTML = G.throwLog.map((e, idx) => `
+      <div class="result-entry">
+        <div class="result-entry-header">
+          <div class="result-entry-dot" style="background:${e.playerColor}"></div>
+          <span class="result-entry-name">${e.playerName}</span>
+          ${idx === 0 ? '<span class="result-entry-new">최신</span>' : ''}
+        </div>
+        <div class="result-entry-chips">
+          ${e.results.map(r =>
+            `<div class="r-chip ${r.result}">
+              <span class="r-chip-type">${lbl[r.type]}</span>
+              <span class="r-chip-face">${face[r.result]}</span>
+            </div>`).join('')}
+          <span class="r-move">${face[e.dir]} ${e.match}개 → <strong>${e.match}칸 전진</strong></span>
+          ${e.bonus ? '<span class="r-bonus">🎉 한 번 더!</span>' : ''}
+        </div>
+      </div>`).join('');
+    card.scrollTop = 0;
   }
 
   /* ── THROW ── */
@@ -786,17 +827,9 @@
     cp.routeIdx = Math.min(cp.routeIdx + match, cp.route.length - 1);
     renderAll();
 
-    // Result chips
-    const lbl  = {coin:'동전', yut:'윷'};
-    const face = {front:'앞면', back:'뒷면'};
-    let html = results.map(r =>
-      `<div class="r-chip ${r.result}">
-        <span class="r-chip-type">${lbl[r.type]}</span>
-        <span class="r-chip-face">${face[r.result]}</span>
-      </div>`).join('');
-    html += `<span class="r-move">${face[G.dir]} ${match}개 → <strong>${match}칸 전진</strong></span>`;
-    if (bonus) html += `<span class="r-bonus">🎉 한 번 더!</span>`;
-    document.getElementById('resultCard').innerHTML = html;
+    // Append to throw log and render
+    G.throwLog.unshift({ playerName: cp.name, playerColor: cp.color, results, dir: G.dir, match, bonus });
+    renderLog();
 
     document.querySelectorAll('.dir-btn').forEach(el => el.style.pointerEvents = '');
 
@@ -854,13 +887,16 @@
     const overlay = document.getElementById('throwOverlay');
     const popup   = document.getElementById('throwPopup');
     const face    = {front:'앞면', back:'뒷면'};
-    popup.innerHTML = results.map(r => `
-      <div class="throw-item">
-        ${r.type === 'coin'
-          ? '<div class="throw-ico">🪙</div>'
-          : '<img src="image/yut_round.png" class="throw-yut-img" alt="윷">'}
-        <div class="throw-face ${r.result}">${face[r.result]}</div>
-      </div>`).join('');
+    popup.innerHTML = results.map(r => {
+      let ico;
+      if (r.type === 'coin') {
+        ico = '<div class="throw-ico">🪙</div>';
+      } else {
+        const src = r.result === 'back' ? 'image/yut_flat.png' : 'image/yut_round.png';
+        ico = `<img src="${src}" class="throw-yut-img" alt="윷">`;
+      }
+      return `<div class="throw-item">${ico}<div class="throw-face ${r.result}">${face[r.result]}</div></div>`;
+    }).join('');
     overlay.classList.add('on');
     await sleep(850);
     overlay.classList.remove('on');
