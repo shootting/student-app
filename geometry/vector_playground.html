@@ -104,12 +104,20 @@
   .materials b { color:var(--black); }
 
   .sim-grid { display:grid; grid-template-columns: 420px 1fr; gap:1.6rem; align-items:start; }
+  .sim-grid-stacked { display:block; }
+  .sim-grid-stacked .stage-wrap { width:100%; margin-bottom:1.4rem; }
   .stage-wrap { background:var(--accent4); border-radius:16px; padding:0.6rem; }
   svg.stage { width:100%; height:auto; display:block; touch-action:none; }
 
   .ctrl-row { margin-bottom:1.1rem; }
   .ctrl-row label { display:block; font-size:0.82rem; font-weight:600; color:var(--gray); margin-bottom:0.4rem; }
   input[type="range"] { width:100%; accent-color: var(--accent3); }
+  .num-input {
+    width:100%; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:600;
+    padding:0.5rem 0.8rem; border-radius:8px; border:1.5px solid var(--accent3);
+    background:#fff; color:var(--black);
+  }
+  .num-input:focus { outline:none; border-color:var(--text-accent); }
   .btn-row { display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1rem; }
   .btn-ctrl {
     font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700;
@@ -222,22 +230,33 @@
 
     <!-- 덧셈 -->
     <div data-type="add" data-group="sim">
-      <div class="sim-grid">
+      <div class="sim-grid sim-grid-stacked">
         <div class="stage-wrap">
-          <svg class="stage" id="addSvg" viewBox="0 0 420 420">
+          <svg class="stage" id="addSvg" viewBox="0 0 640 420">
             <g id="addDynamic"></g>
           </svg>
         </div>
         <div>
+          <div class="materials">반투명 보트(🚤)를 맞은편 선분 위에서 드래그하거나 아래 슬라이더로 보트 운전 방향을 정하고, 속력 슬라이더로 벡터 길이를 바꿔보세요.</div>
+          <div class="ctrl-row">
+            <label id="addAimLabel">보트 운전 방향 (맞은편 선분 위 목표 위치)</label>
+            <input type="range" id="addAimSlider" min="-11" max="11" step="0.1" value="-1.5">
+          </div>
+          <div class="ctrl-row">
+            <label id="addRiverLabel">물살 속력 (실수값 입력 → 벡터 (c, 0))</label>
+            <input type="number" id="addRiverInput" step="any" value="3" class="num-input">
+          </div>
+          <div class="ctrl-row">
+            <label id="addSpeedLabel">보트 속력 (벡터의 길이 · 클수록 빠르게 출발)</label>
+            <input type="range" id="addSpeedSlider" min="1" max="10" step="0.1" value="5.2">
+          </div>
+          <div class="btn-row">
+            <button class="btn-ctrl active" id="btnDepart">🚤 보트 출발하기</button>
+          </div>
           <div class="btn-row">
             <button class="btn-ctrl active" id="btnMethodTri" data-method="tri">삼각형법</button>
             <button class="btn-ctrl" id="btnMethodPara" data-method="para">평행사변형법</button>
           </div>
-          <div class="ctrl-row">
-            <label id="addRiverLabel">물살 속력</label>
-            <input type="range" id="addRiverSlider" min="0" max="6" step="0.5" value="3">
-          </div>
-          <div class="materials">빨간 점(보트벡터 화살촉)을 드래그해서 보트의 방향과 속력을 바꿔보세요.</div>
           <div class="info-box" id="addInfo"></div>
         </div>
       </div>
@@ -289,9 +308,18 @@
   <!-- STEP 3: 계산으로 확인하기 -->
   <div class="section-card">
     <div class="section-title">Step 3 · 계산으로 확인하기</div>
-    <div data-type="add" data-group="calc"><div class="info-box" id="addCalc"></div></div>
-    <div data-type="sub" data-group="calc"><div class="info-box" id="subCalc"></div></div>
-    <div data-type="dot" data-group="calc"><div class="info-box" id="dotCalc"></div></div>
+    <div data-type="add" data-group="calc">
+      <div class="btn-row"><button class="btn-ctrl" id="btnGridAdd">📐 좌표평면 열기</button></div>
+      <div class="info-box" id="addCalc"></div>
+    </div>
+    <div data-type="sub" data-group="calc">
+      <div class="btn-row"><button class="btn-ctrl" id="btnGridSub">📐 좌표평면 열기</button></div>
+      <div class="info-box" id="subCalc"></div>
+    </div>
+    <div data-type="dot" data-group="calc">
+      <div class="btn-row"><button class="btn-ctrl" id="btnGridDot">📐 좌표평면 열기</button></div>
+      <div class="info-box" id="dotCalc"></div>
+    </div>
   </div>
 
   <!-- STEP 4: 퀴즈 -->
@@ -355,50 +383,90 @@
     return `<text x="${p.x+(dx||0)}" y="${p.y+(dy||0)}" class="${cls}">${str}</text>`;
   }
 
+  /* 계산 확인 탭에서 켜는 좌표평면 오버레이 — 벡터의 좌표를 눈으로 읽을 수 있게 정수 격자와 축 눈금을 그린다 */
+  function gridOverlaySvg(mapper, xmin, xmax, ymin, ymax){
+    let svg = '<g class="coord-grid">';
+    for(let x=Math.ceil(xmin); x<=Math.floor(xmax); x++){
+      svg += lineSvg(mapper, x,ymin, x,ymax, 'grid-line'+(x===0?' grid-axis':''));
+      if(x!==0) svg += textSvg(mapper, x,0, String(x), 'grid-tick', -3, 13);
+    }
+    for(let y=Math.ceil(ymin); y<=Math.floor(ymax); y++){
+      svg += lineSvg(mapper, xmin,y, xmax,y, 'grid-line'+(y===0?' grid-axis':''));
+      if(y!==0) svg += textSvg(mapper, 0,y, String(y), 'grid-tick', 5, 4);
+    }
+    svg += '</g>';
+    return svg;
+  }
+
+  let showGridAdd = false, showGridSub = false, showGridDot = false;
+
   /* ═══════════════════════ 덧셈 탭 (강 건너기 ①) ═══════════════════════ */
   const RIVER_W = 8;
-  const addMap = makeMapper(190, 370, 20);
-  const addInv = makeInverse(190, 370, 20);
+  const ADD_XMIN = -11, ADD_XMAX = 11;
+  const addMap = makeMapper(320, 370, 20);
+  const addInv = makeInverse(320, 370, 20);
   const addSvg = document.getElementById('addSvg');
   const addDynamic = document.getElementById('addDynamic');
-  const addRiverSlider = document.getElementById('addRiverSlider');
+  const addAimSlider = document.getElementById('addAimSlider');
+  const addRiverInput = document.getElementById('addRiverInput');
+  const addSpeedSlider = document.getElementById('addSpeedSlider');
   const addInfo = document.getElementById('addInfo');
   const addCalc = document.getElementById('addCalc');
   const btnMethodTri = document.getElementById('btnMethodTri');
   const btnMethodPara = document.getElementById('btnMethodPara');
+  const btnDepart = document.getElementById('btnDepart');
 
-  let addState = { boat:{x:-1.5,y:5}, river:3, method:'tri' };
-  let addDragging = false;
+  let addState = { aimX:-1.5, speed:5.2, river:3, method:'tri', animating:false, boatPos:null, flowPhase:0 };
+  let addAimDragging = false;
 
-  function riverBaseSvg(mapper, xmin, xmax){
+  function computeAddBoatVec(){
+    const dx = addState.aimX, dy = RIVER_W;
+    const len = Math.hypot(dx,dy) || 1;
+    return { x: (dx/len)*addState.speed, y: (dy/len)*addState.speed };
+  }
+
+  function wrapCoord(v, lo, hi){ const span = hi-lo; return lo + (((v-lo)%span)+span)%span; }
+
+  function riverBaseSvg(mapper, xmin, xmax, phase, drawStart){
+    phase = phase || 0;
+    if(drawStart === undefined) drawStart = true;
     let svg = '';
     svg += `<rect x="${mapper(xmin,RIVER_W).x}" y="${mapper(xmin,RIVER_W).y}" width="${mapper(xmax,0).x-mapper(xmin,RIVER_W).x}" height="${mapper(0,0).y-mapper(0,RIVER_W).y}" class="river-band"/>`;
     svg += lineSvg(mapper, xmin,0,xmax,0,'bank-line');
     svg += lineSvg(mapper, xmin,RIVER_W,xmax,RIVER_W,'bank-line');
-    for(let i=0;i<4;i++){
-      const cx = xmin + 1.5 + i*((xmax-xmin-3)/3);
+    const n = Math.max(2, Math.round((xmax-xmin-2)/2.4)+1);
+    for(let i=0;i<n;i++){
+      const baseX = xmin + 1 + i*((xmax-xmin-2)/(n-1));
+      const cx = wrapCoord(baseX + phase, xmin+0.5, xmax-0.5);
       svg += textSvg(mapper, cx, RIVER_W/2, '≫', 'flow-chevron', -6, 5);
     }
-    svg += dotSvgPt(mapper, 0,0, 6, 'pt-boat-start');
-    svg += textSvg(mapper, 0,0, '출발', 'pt-label-small', -22, 20);
+    if(drawStart){
+      svg += dotSvgPt(mapper, 0,0, 6, 'pt-boat-start');
+      svg += textSvg(mapper, 0,0, '출발', 'pt-label-small', -22, 20);
+    }
     return svg;
   }
 
-  function addOnDown(e){ addDragging = true; e.preventDefault(); }
+  // 출발 전(또는 도착 후 정지 상태)에 조건을 바꾸면 보트를 출발 지점으로 되돌린다
+  function resetBoatIfIdle(){ if(!addState.animating) addState.boatPos = null; }
+
+  function addAimOnDown(e){ if(addState.animating) return; addAimDragging = true; e.preventDefault(); }
   addSvg.addEventListener('pointermove', e=>{
-    if(!addDragging) return;
+    if(!addAimDragging || addState.animating) return;
     const px = svgPointFromEvent(addSvg, e);
     const m = addInv(px.x, px.y);
-    addState.boat.x = clamp(m.x, -7, 7);
-    addState.boat.y = clamp(m.y, 1, 8);
+    addState.aimX = clamp(m.x, ADD_XMIN, ADD_XMAX);
+    addAimSlider.value = addState.aimX;
+    resetBoatIfIdle();
     renderAdd(); renderAddCalc();
   });
-  window.addEventListener('pointerup', ()=>{ addDragging=false; });
+  window.addEventListener('pointerup', ()=>{ addAimDragging=false; });
 
   function renderAdd(){
-    const b = addState.boat, c = addState.river;
+    const b = computeAddBoatVec(), c = addState.river;
     const rx = b.x + c, ry = b.y;
-    let svg = riverBaseSvg(addMap, -7, 7);
+    let svg = riverBaseSvg(addMap, ADD_XMIN, ADD_XMAX, addState.flowPhase, false);
+    if(showGridAdd) svg += gridOverlaySvg(addMap, ADD_XMIN, ADD_XMAX, -1, RIVER_W+1);
 
     if(addState.method === 'para'){
       svg += lineSvg(addMap, b.x,b.y, rx,ry, 'vec-guide');
@@ -412,45 +480,121 @@
     svg += arrowSvg(addMap, 0,0, rx,ry, 'vec-result');
 
     // landing path along resultant to far bank
+    let landX = null;
     if(ry > 0.3){
       const t = RIVER_W/ry;
-      const landX = t*rx;
+      landX = t*rx;
       svg += lineSvg(addMap, 0,0, landX, RIVER_W, 'vec-path');
       svg += dotSvgPt(addMap, landX, RIVER_W, 6, 'pt-land');
-      svg += textSvg(addMap, landX, RIVER_W, '도착', 'pt-label-small', 8, -8);
+      svg += textSvg(addMap, landX, RIVER_W, '실제 도착', 'pt-label-small', 8, -8);
     }
-    svg += dotSvgPt(addMap, 0, RIVER_W, 5, 'pt-target-ghost');
-    svg += textSvg(addMap, 0, RIVER_W, '맞은편', 'pt-label-ghost', -34, -8);
+
+    // 보트 운전 방향 핸들: 맞은편 선분 위에서 드래그하는 반투명 보트 이모지 (선분보다 살짝 위에 떠 있도록 표시)
+    const AIM_LIFT = 14;
+    const aimP = addMap(addState.aimX, RIVER_W);
+    svg += `<circle cx="${aimP.x}" cy="${aimP.y-AIM_LIFT}" r="15" fill="rgba(0,0,0,0)" id="addAimHandle" class="drag-hit"/>`;
+    svg += `<text x="${aimP.x}" y="${aimP.y-AIM_LIFT}" class="boat-emoji-ghost" text-anchor="middle" dominant-baseline="central">🚤</text>`;
+    svg += textSvg(addMap, addState.aimX, RIVER_W, '보트 운전 방향', 'pt-label-ghost', -30, -18-AIM_LIFT);
+
+    // the actual boat: resting at start, animating toward the landing point, or resting there after arrival
+    const bp = addState.boatPos || {x:0,y:0};
+    const boatP = addMap(bp.x, bp.y);
+    svg += `<text x="${boatP.x}" y="${boatP.y}" class="boat-emoji" text-anchor="middle" dominant-baseline="central">🚤</text>`;
+    if(!addState.animating && !addState.boatPos) svg += textSvg(addMap, 0,0, '출발', 'pt-label-small', -22, 22);
 
     svg += textSvg(addMap, b.x,b.y, KXsvgSafe('v_보트'), 'pt-label-boat', 8,-8);
     svg += textSvg(addMap, c,0, KXsvgSafe('v_물살'), 'pt-label-river', 6,16);
     svg += textSvg(addMap, rx,ry, KXsvgSafe('v_실제'), 'pt-label-result', 8,-10);
 
     addDynamic.innerHTML = svg;
-    const handle = `<circle cx="${addMap(b.x,b.y).x}" cy="${addMap(b.x,b.y).y}" r="8" class="drag-handle" id="addHandle"/>`;
-    addDynamic.innerHTML += handle;
-    document.getElementById('addHandle').addEventListener('pointerdown', addOnDown);
+    const aimHandle = document.getElementById('addAimHandle');
+    if(aimHandle) aimHandle.addEventListener('pointerdown', addAimOnDown);
 
     addInfo.innerHTML = `${KX('\\vec{v}_{보트}=('+vec(b.x,b.y)+')')}`
       + `&emsp;${KX('\\vec{v}_{물살}=('+vec(c,0)+')')}`
       + `<br>${KX('\\vec{v}_{실제}=\\vec{v}_{보트}+\\vec{v}_{물살}=('+vec(rx,ry)+')')}`
       + `<br>${KX('|\\vec{v}_{실제}|=\\sqrt{'+numFmt(rx)+'^2+'+numFmt(ry)+'^2}\\approx'+numFmt(Math.hypot(rx,ry))+'')}`
-      + `<br>현재 작도법: <b>${addState.method==='tri' ? '삼각형법' : '평행사변형법'}</b> — 두 방법 모두 같은 실제속도벡터를 만듭니다.`;
+      + `<br>현재 작도법: <b>${addState.method==='tri' ? '삼각형법' : '평행사변형법'}</b> — 두 방법 모두 같은 실제속도벡터를 만듭니다.`
+      + (landX===null ? `<br><span style="color:var(--bad)">보트가 앞으로 나아가지 못합니다. 조준 방향을 바꿔보세요.</span>` : '');
   }
 
   function renderAddCalc(){
-    const b = addState.boat, c = addState.river;
+    const b = computeAddBoatVec(), c = addState.river;
     addCalc.innerHTML = `${KX('\\vec a=(a_1,a_2),\\ \\vec b=(b_1,b_2)\\ \\Rightarrow\\ \\vec a+\\vec b=(a_1+b_1,\\ a_2+b_2)')}`
       + `<br>지금 값을 대입하면: ${KX('('+vec(b.x,b.y)+')+('+vec(c,0)+')=('+vec(b.x+c,b.y)+')')}`
       + `<br>그림에서 작도한 ${KX('\\vec v_{실제}')}의 화살촉 위치와 정확히 같은 점입니다.`;
   }
+
+  function setAddControlsDisabled(disabled){
+    addAimSlider.disabled = disabled;
+    addRiverInput.disabled = disabled;
+    addSpeedSlider.disabled = disabled;
+    btnMethodTri.disabled = disabled;
+    btnMethodPara.disabled = disabled;
+    btnDepart.disabled = disabled;
+    btnDepart.textContent = disabled ? '🚤 이동 중...' : '🚤 보트 출발하기';
+  }
+
+  function departBoat(){
+    if(addState.animating) return;
+    const b = computeAddBoatVec(), c = addState.river;
+    const rx = b.x + c, ry = b.y;
+    if(ry <= 0.3){ renderAdd(); return; }
+    const t = RIVER_W/ry;
+    const landX = t*rx;
+
+    addState.animating = true;
+    addState.boatPos = {x:0,y:0};
+    setAddControlsDisabled(true);
+
+    // 보트 속력(addState.speed)이 클수록 짧은 시간에 도착 — 기준 속력 5일 때 약 2.2초
+    const REFERENCE_SPEED = 5, REFERENCE_DURATION = 2200;
+    const DURATION = clamp(REFERENCE_DURATION * REFERENCE_SPEED / Math.max(addState.speed, 0.5), 700, 6000);
+
+    const start = performance.now();
+    let lastT = start;
+    function frame(now){
+      const dt = (now-lastT)/1000; lastT = now;
+      const tt = Math.min(1, (now-start)/DURATION);
+      const ease = tt<0.5 ? 2*tt*tt : 1-Math.pow(-2*tt+2,2)/2;
+      addState.boatPos = { x: landX*ease, y: RIVER_W*ease };
+      // 물살 속력(c)이 클수록 물살 흐름 표시(≫)가 더 빠르게 흐른다
+      addState.flowPhase = (addState.flowPhase||0) + c*dt*0.9;
+      renderAdd();
+      if(tt < 1) requestAnimationFrame(frame);
+      else {
+        // 도착 후에는 보트를 실제 도착 지점에 그대로 멈춰 둔다 (원점으로 되돌리지 않음)
+        addState.boatPos = { x: landX, y: RIVER_W };
+        addState.animating = false;
+        setAddControlsDisabled(false);
+        renderAdd();
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+  btnDepart.addEventListener('click', departBoat);
 
   function KXsvgSafe(name){
     const map = { 'v_보트':'v→ 보트', 'v_물살':'v→ 물살', 'v_실제':'v→ 실제' };
     return map[name] || name;
   }
 
-  addRiverSlider.addEventListener('input', ()=>{ addState.river = +addRiverSlider.value; renderAdd(); renderAddCalc(); });
+  addAimSlider.addEventListener('input', ()=>{
+    addState.aimX = +addAimSlider.value;
+    resetBoatIfIdle();
+    renderAdd(); renderAddCalc();
+  });
+  addRiverInput.addEventListener('input', ()=>{
+    const v = parseFloat(addRiverInput.value);
+    addState.river = isNaN(v) ? 0 : v;
+    resetBoatIfIdle();
+    renderAdd(); renderAddCalc();
+  });
+  addSpeedSlider.addEventListener('input', ()=>{
+    addState.speed = +addSpeedSlider.value;
+    resetBoatIfIdle();
+    renderAdd(); renderAddCalc();
+  });
   btnMethodTri.addEventListener('click', ()=>{ addState.method='tri'; btnMethodTri.classList.add('active'); btnMethodPara.classList.remove('active'); renderAdd(); });
   btnMethodPara.addEventListener('click', ()=>{ addState.method='para'; btnMethodPara.classList.add('active'); btnMethodTri.classList.remove('active'); renderAdd(); });
 
@@ -485,6 +629,7 @@
     const hit = Math.hypot(resX-0, resY-vt) < 0.45;
 
     let svg = riverBaseSvg(subMap, -7, 7);
+    if(showGridSub) svg += gridOverlaySvg(subMap, -7, 7, -1, RIVER_W+1);
 
     // guide construction: target from origin, then -river from target tip
     svg += arrowSvg(subMap, 0,0, 0,vt, 'vec-target');
@@ -552,6 +697,7 @@
     const F = dotState.F, d = dotState.d;
     const mag = Math.hypot(F.x,F.y), deg = Math.atan2(F.y,F.x)*180/Math.PI;
     let svg = '';
+    if(showGridDot) svg += gridOverlaySvg(dotMap, -1, 10, -1, 9);
     svg += lineSvg(dotMap, -1, 0, 10, 0, 'floor-line');
     svg += `<rect x="${dotMap(-0.6,1.2).x}" y="${dotMap(-0.6,1.2).y}" width="${1.2*24}" height="${1.2*24}" class="box-icon"/>`;
     svg += `<rect x="${dotMap(d-0.6,1.2).x}" y="${dotMap(d-0.6,1.2).y}" width="${1.2*24}" height="${1.2*24}" class="box-ghost"/>`;
@@ -590,6 +736,20 @@
 
   dotDisSlider.addEventListener('input', ()=>{ dotState.d = +dotDisSlider.value; renderDot(); renderDotCalc(); });
 
+  /* ═══ 좌표평면 열기/닫기 토글 ═══ */
+  function wireGridToggle(btnId, getShow, setShow, render){
+    const btn = document.getElementById(btnId);
+    btn.addEventListener('click', ()=>{
+      setShow(!getShow());
+      btn.classList.toggle('active', getShow());
+      btn.textContent = getShow() ? '📐 좌표평면 닫기' : '📐 좌표평면 열기';
+      render();
+    });
+  }
+  wireGridToggle('btnGridAdd', ()=>showGridAdd, v=>showGridAdd=v, renderAdd);
+  wireGridToggle('btnGridSub', ()=>showGridSub, v=>showGridSub=v, renderSub);
+  wireGridToggle('btnGridDot', ()=>showGridDot, v=>showGridDot=v, renderDot);
+
   /* ═══ SVG 스타일 (동적 요소용) ═══ */
   const styleTag = document.createElement('style');
   styleTag.textContent = `
@@ -625,6 +785,12 @@
     .pt-label-small { font-size:11px; font-weight:600; fill:#555; font-family:'Inter',sans-serif; }
     .pt-label-ghost { font-size:11px; font-weight:600; fill:#2f6ea0; opacity:0.7; font-family:'Inter',sans-serif; }
     .drag-handle { fill:#d24a4a; cursor:grab; }
+    .drag-hit { cursor:grab; }
+    .boat-emoji { font-size:22px; }
+    .boat-emoji-ghost { font-size:20px; opacity:0.45; }
+    .grid-line { stroke:#9878c0; stroke-width:0.6; opacity:0.28; }
+    .grid-axis { stroke:#6a4a9a; stroke-width:1.1; opacity:0.55; }
+    .grid-tick { font-size:9px; fill:#8a6ab8; font-family:'Inter',sans-serif; }
   `;
   document.head.appendChild(styleTag);
 
