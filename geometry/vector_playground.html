@@ -106,8 +106,46 @@
   .sim-grid { display:grid; grid-template-columns: 420px 1fr; gap:1.6rem; align-items:start; }
   .sim-grid-stacked { display:block; }
   .sim-grid-stacked .stage-wrap { width:100%; margin-bottom:1.4rem; }
-  .stage-wrap { background:var(--accent4); border-radius:16px; padding:0.6rem; }
+  .stage-wrap { background:var(--accent4); border-radius:16px; padding:0.6rem; position:relative; }
   svg.stage { width:100%; height:auto; display:block; touch-action:none; }
+
+  /* ── 보트 게임 점수판 ── */
+  .game-score-panel {
+    display:none; position:absolute; top:1rem; right:1rem;
+    background:rgba(255,255,255,0.92); border-radius:12px; padding:0.55rem 1rem;
+    font-family:'Inter',sans-serif; font-size:0.8rem; font-weight:700; color:var(--gray);
+    box-shadow:var(--shadow-sm); text-align:right; line-height:1.7;
+  }
+  .game-score-panel.show { display:block; }
+  .game-attempt-count { font-size:0.72rem; font-weight:600; color:var(--gray); opacity:0.75; margin-bottom:0.3rem; padding-bottom:0.3rem; border-bottom:1px solid var(--accent1); }
+  .game-score-item.current { color:var(--text-accent); }
+  .game-score-item b { font-size:1rem; }
+
+  /* ── 보트 게임 목표 지점 마커 ── */
+  .pt-game-target { fill:none; stroke:var(--bad); stroke-width:2; stroke-dasharray:3,3; }
+  .game-target-emoji { font-size:18px; text-anchor:middle; }
+
+  /* ── 보트 게임 도달 팝업 ── */
+  @keyframes bonusIn { from{ transform:scale(0.5) translateY(40px); opacity:0; } to{ transform:scale(1) translateY(0); opacity:1; } }
+  .game-popup-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:600;
+    align-items:center; justify-content:center;
+  }
+  .game-popup-overlay.on { display:flex; }
+  .game-popup {
+    background:#fff; border-radius:24px; padding:2.2rem 2.6rem; box-shadow:0 24px 80px rgba(0,0,0,0.28);
+    text-align:center; max-width:300px; width:90%; animation:bonusIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  .game-popup-icon { font-size:3.2rem; margin-bottom:0.3rem; }
+  .game-popup-title { font-size:1.4rem; font-weight:900; color:var(--text-accent); margin:0 0 0.5rem; }
+  .game-popup-msg { font-size:0.88rem; color:#555; margin-bottom:1.1rem; line-height:1.7; }
+  .game-popup-btn {
+    width:100%; padding:0.75rem; background:linear-gradient(135deg, var(--accent3), var(--text-accent));
+    border:none; border-radius:14px; color:#fff; font-family:'Inter',sans-serif; font-size:0.95rem; font-weight:800;
+    cursor:pointer; box-shadow:0 4px 14px rgba(106,74,154,0.4); transition:transform .15s, box-shadow .15s;
+  }
+  .game-popup-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(106,74,154,0.5); }
+  .game-popup-btn:active { transform:translateY(0); }
 
   .ctrl-row { margin-bottom:1.1rem; }
   .ctrl-row label { display:block; font-size:0.82rem; font-weight:600; color:var(--gray); margin-bottom:0.4rem; }
@@ -138,7 +176,7 @@
   .proof-formula .katex { font-size: 1.1em; color: inherit; }
 
   /* quiz */
-  .quiz-grid { display:grid; grid-template-columns: 200px 1fr; gap:1.4rem; align-items:start; }
+  .quiz-grid { display:grid; grid-template-columns: 340px 1fr; gap:1.4rem; align-items:start; }
   .quiz-diagram-wrap { background:var(--accent4); border-radius:16px; padding:0.5rem; }
   svg.quiz-diagram { width:100%; height:auto; display:block; }
   .quiz-progress { font-size:0.8rem; color:var(--gray); margin-bottom:0.8rem; font-weight:600; }
@@ -163,7 +201,7 @@
     .main { padding: 0 1rem 4rem; }
     .sim-grid { grid-template-columns: 1fr; }
     .quiz-grid { grid-template-columns: 1fr; }
-    .quiz-diagram-wrap { max-width: 220px; margin: 0 auto; }
+    .quiz-diagram-wrap { max-width: 320px; margin: 0 auto; }
     .deco-1, .deco-2 { display:none; }
   }
 </style>
@@ -235,6 +273,11 @@
           <svg class="stage" id="addSvg" viewBox="0 0 640 420">
             <g id="addDynamic"></g>
           </svg>
+          <div class="game-score-panel" id="addScorePanel">
+            <div class="game-attempt-count" id="addAttemptCount">총 시도 0회</div>
+            <div class="game-score-item" id="addScoreP1">플레이어1 · <b>0</b>점</div>
+            <div class="game-score-item" id="addScoreP2">플레이어2 · <b>0</b>점</div>
+          </div>
         </div>
         <div>
           <div class="materials">반투명 보트(🚤)를 맞은편 선분 위에서 드래그하거나 아래 슬라이더로 보트 운전 방향을 정하고, 속력 슬라이더로 벡터 길이를 바꿔보세요.</div>
@@ -244,7 +287,7 @@
           </div>
           <div class="ctrl-row">
             <label id="addRiverLabel">물살 속력 (실수값 입력 → 벡터 (c, 0))</label>
-            <input type="number" id="addRiverInput" step="any" value="3" class="num-input">
+            <input type="number" id="addRiverInput" step="0.1" value="3" class="num-input">
           </div>
           <div class="ctrl-row">
             <label id="addSpeedLabel">보트 속력 (벡터의 길이 · 클수록 빠르게 출발)</label>
@@ -252,6 +295,11 @@
           </div>
           <div class="btn-row">
             <button class="btn-ctrl active" id="btnDepart">🚤 보트 출발하기</button>
+            <button class="btn-ctrl" id="btnPlayGame">🎯 보트 게임하기</button>
+            <button class="btn-ctrl" id="btnResetGame" disabled>↺ 초기화</button>
+          </div>
+          <div class="materials" id="addGameHint" style="display:none;">
+            🎯 목표 지점(빨간 점선 원)까지 보트를 보내보세요! 세 조작 중 <b>하나만</b> 바꿀 수 있어요 — 짝과 번갈아 도전해서 점수를 올려보세요.
           </div>
           <div class="btn-row">
             <button class="btn-ctrl active" id="btnMethodTri" data-method="tri">삼각형법</button>
@@ -330,6 +378,15 @@
 
 </div>
 
+<div class="game-popup-overlay" id="gamePopupOverlay">
+  <div class="game-popup">
+    <div class="game-popup-icon">🎉</div>
+    <div class="game-popup-title">목표에 도달했습니다!</div>
+    <div class="game-popup-msg" id="gamePopupMsg"></div>
+    <button class="game-popup-btn" id="gamePopupBtn">다음 라운드 →</button>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script>
 (function(){
@@ -356,8 +413,9 @@
 
   function svgPointFromEvent(svgEl, e){
     const rect = svgEl.getBoundingClientRect();
-    const sx = 420/rect.width, sy = 420/rect.height;
-    return { x:(e.clientX-rect.left)*sx, y:(e.clientY-rect.top)*sy };
+    const vb = svgEl.viewBox.baseVal;
+    const sx = vb.width/rect.width, sy = vb.height/rect.height;
+    return { x: vb.x + (e.clientX-rect.left)*sx, y: vb.y + (e.clientY-rect.top)*sy };
   }
 
   function arrowSvg(mapper, x0,y0,x1,y1, cls){
@@ -381,6 +439,17 @@
   function textSvg(mapper, x,y, str, cls, dx,dy){
     const p = mapper(x,y);
     return `<text x="${p.x+(dx||0)}" y="${p.y+(dy||0)}" class="${cls}">${str}</text>`;
+  }
+  /* SVG <text>는 KaTeX가 만드는 HTML을 담지 못하므로, foreignObject로 KaTeX 렌더링 결과를 SVG 위에 얹는다
+     align:'right'를 주면 박스의 오른쪽 끝이 기준점(x,y)에 오도록 배치해, 화살표의 "왼쪽"에 라벨을 붙일 수 있다 */
+  function vecLabelSvg(mapper, x,y, latex, cls, dx,dy, align){
+    const p = mapper(x,y), w = 130;
+    const bx = align==='right' ? p.x+(dx||0)-w : p.x+(dx||0);
+    const by = p.y + (dy||0) - 11;
+    const style = align==='right' ? ' style="justify-content:flex-end"' : '';
+    return `<foreignObject x="${bx}" y="${by}" width="${w}" height="24" class="vec-label-fo">`
+         + `<div xmlns="http://www.w3.org/1999/xhtml" class="vec-label-html ${cls}"${style}>${KX(latex)}</div>`
+         + `</foreignObject>`;
   }
 
   /* 계산 확인 탭에서 켜는 좌표평면 오버레이 — 벡터의 좌표를 눈으로 읽을 수 있게 정수 격자와 축 눈금을 그린다 */
@@ -415,8 +484,18 @@
   const btnMethodTri = document.getElementById('btnMethodTri');
   const btnMethodPara = document.getElementById('btnMethodPara');
   const btnDepart = document.getElementById('btnDepart');
+  const btnPlayGame = document.getElementById('btnPlayGame');
+  const btnResetGame = document.getElementById('btnResetGame');
+  const addGameHint = document.getElementById('addGameHint');
+  const addScorePanel = document.getElementById('addScorePanel');
+  const addScoreP1 = document.getElementById('addScoreP1');
+  const addScoreP2 = document.getElementById('addScoreP2');
+  const addAttemptCount = document.getElementById('addAttemptCount');
+  const gamePopupOverlay = document.getElementById('gamePopupOverlay');
+  const gamePopupMsg = document.getElementById('gamePopupMsg');
+  const gamePopupBtn = document.getElementById('gamePopupBtn');
 
-  let addState = { aimX:-1.5, speed:5.2, river:3, method:'tri', animating:false, boatPos:null, flowPhase:0 };
+  let addState = { aimX:-1.5, speed:5.2, river:3, method:'tri', animating:false, boatPos:null, flowPhase:0, arrived:false };
   let addAimDragging = false;
 
   function computeAddBoatVec(){
@@ -425,9 +504,134 @@
     return { x: (dx/len)*addState.speed, y: (dy/len)*addState.speed };
   }
 
+  /* ═══════════════════════ 보트 게임 (목표 지점 맞히기, 2인 경쟁) ═══════════════════════ */
+  const GAME_PARAM_BOUNDS = { aim:[-11,11], river:[0.5,6], speed:[1,10] };
+  const GAME_TOLERANCE = 0.6;
+  let gameState = { active:false, freeParam:null, targetX:0, currentPlayer:1, scores:[0,0], attempt:0 };
+
+  function randRange(lo,hi){ return lo + Math.random()*(hi-lo); }
+  function round1(n){ return Math.round(n*10)/10; }
+
+  // 물살/속력/조준 세 값이 주어졌을 때 보트가 실제로 맞은편에 도착하는 x좌표 (departBoat의 계산과 동일한 공식)
+  function computeLandX(aimX, river, speed){
+    const len = Math.hypot(aimX, RIVER_W) || 1;
+    const bx = (aimX/len)*speed, by = (RIVER_W/len)*speed;
+    const rx = bx + river, ry = by;
+    if(ry <= 0.3) return null;
+    return (RIVER_W/ry) * rx;
+  }
+
+  // 나머지 두 값을 고정한 채 자유 조작 하나를 범위 끝에서 끝까지 움직여 봤을 때, 그림판 안에 도착하는 x좌표 범위
+  // (그림판 밖으로 나가는 도착 지점은 목표 후보에서 제외해, 목표가 항상 애니메이션 안에 보이도록 한다)
+  const GAME_TARGET_VIS_MIN = ADD_XMIN + 1, GAME_TARGET_VIS_MAX = ADD_XMAX - 1;
+  function sampleAchievableRange(freeParam, fixed){
+    const [lo,hi] = GAME_PARAM_BOUNDS[freeParam];
+    let min = Infinity, max = -Infinity;
+    for(let i=0;i<=40;i++){
+      const v = lo + (hi-lo)*i/40;
+      const lx = computeLandX(
+        freeParam==='aim'   ? v : fixed.aim,
+        freeParam==='river' ? v : fixed.river,
+        freeParam==='speed' ? v : fixed.speed
+      );
+      if(lx!==null && lx>=GAME_TARGET_VIS_MIN && lx<=GAME_TARGET_VIS_MAX){ min = Math.min(min,lx); max = Math.max(max,lx); }
+    }
+    return min<=max ? {min,max} : null;
+  }
+
+  function renderGamePanel(){
+    addScorePanel.classList.toggle('show', gameState.active);
+    addGameHint.style.display = gameState.active ? '' : 'none';
+    addAttemptCount.textContent = `총 시도 ${gameState.attempt}회`;
+    addScoreP1.innerHTML = `플레이어1 · <b>${gameState.scores[0]}</b>점`;
+    addScoreP2.innerHTML = `플레이어2 · <b>${gameState.scores[1]}</b>점`;
+    addScoreP1.classList.toggle('current', gameState.active && gameState.currentPlayer===1);
+    addScoreP2.classList.toggle('current', gameState.active && gameState.currentPlayer===2);
+  }
+
+  function startGameRound(){
+    const params = ['aim','river','speed'];
+    gameState.freeParam = params[Math.floor(Math.random()*3)];
+
+    // 목표 지점이 그림판 밖으로 나가지 않는 고정값 조합을 찾을 때까지 다시 뽑는다 (드물게 실패하면 안전한 기본값으로 대체)
+    let fixed, range;
+    for(let tries=0; tries<20 && !range; tries++){
+      fixed = { aim: round1(randRange(-6,6)), river: round1(randRange(1,5)), speed: round1(randRange(3,8)) };
+      range = sampleAchievableRange(gameState.freeParam, fixed);
+    }
+    if(!range){
+      fixed = { aim:0, river:3, speed:5 };
+      range = sampleAchievableRange(gameState.freeParam, fixed);
+    }
+    const margin = (range.max-range.min) * 0.15;
+    gameState.targetX = (range.max-range.min > 1)
+      ? round1(randRange(range.min+margin, range.max-margin))
+      : round1((range.min+range.max)/2);
+
+    addState.aimX = fixed.aim; addState.river = fixed.river; addState.speed = fixed.speed;
+    // 자유 조작 값은 정답 근처가 아닌, 그 조작의 조정 가능 범위 중앙에서 시작한다
+    const stateKey = { aim:'aimX', river:'river', speed:'speed' }[gameState.freeParam];
+    const [flo,fhi] = GAME_PARAM_BOUNDS[gameState.freeParam];
+    addState[stateKey] = round1((flo+fhi)/2);
+
+    addAimSlider.value = addState.aimX;
+    addRiverInput.value = addState.river;
+    addSpeedSlider.value = addState.speed;
+    addAimSlider.disabled = gameState.freeParam !== 'aim';
+    addRiverInput.disabled = gameState.freeParam !== 'river';
+    addSpeedSlider.disabled = gameState.freeParam !== 'speed';
+
+    addState.boatPos = null;
+    addState.arrived = false;
+    addState.animating = false;
+
+    renderAdd(); renderAddCalc(); renderGamePanel();
+  }
+
+  function advanceGameTurn(){
+    gameState.currentPlayer = gameState.currentPlayer===1 ? 2 : 1;
+    startGameRound();
+  }
+
+  let addPreGameSnapshot = null;
+
+  btnPlayGame.addEventListener('click', ()=>{
+    addPreGameSnapshot = { aimX: addState.aimX, river: addState.river, speed: addState.speed };
+    gameState.active = true;
+    gameState.scores = [0,0];
+    gameState.currentPlayer = 1;
+    gameState.attempt = 0;
+    btnPlayGame.disabled = true;
+    btnResetGame.disabled = false;
+    startGameRound();
+  });
+
+  btnResetGame.addEventListener('click', ()=>{
+    gameState.active = false;
+    if(addPreGameSnapshot){
+      addState.aimX = addPreGameSnapshot.aimX;
+      addState.river = addPreGameSnapshot.river;
+      addState.speed = addPreGameSnapshot.speed;
+      addAimSlider.value = addState.aimX;
+      addRiverInput.value = addState.river;
+      addSpeedSlider.value = addState.speed;
+      addPreGameSnapshot = null;
+    }
+    btnPlayGame.disabled = false;
+    btnResetGame.disabled = true;
+    addAimSlider.disabled = addRiverInput.disabled = addSpeedSlider.disabled = false;
+    resetBoatIfIdle();
+    renderAdd(); renderAddCalc(); renderGamePanel();
+  });
+
+  gamePopupBtn.addEventListener('click', ()=>{
+    gamePopupOverlay.classList.remove('on');
+    advanceGameTurn();
+  });
+
   function wrapCoord(v, lo, hi){ const span = hi-lo; return lo + (((v-lo)%span)+span)%span; }
 
-  function riverBaseSvg(mapper, xmin, xmax, phase, drawStart){
+  function riverBaseSvg(mapper, xmin, xmax, phase, drawStart, reversed){
     phase = phase || 0;
     if(drawStart === undefined) drawStart = true;
     let svg = '';
@@ -435,10 +639,11 @@
     svg += lineSvg(mapper, xmin,0,xmax,0,'bank-line');
     svg += lineSvg(mapper, xmin,RIVER_W,xmax,RIVER_W,'bank-line');
     const n = Math.max(2, Math.round((xmax-xmin-2)/2.4)+1);
+    const chevron = reversed ? '≪' : '≫';
     for(let i=0;i<n;i++){
       const baseX = xmin + 1 + i*((xmax-xmin-2)/(n-1));
       const cx = wrapCoord(baseX + phase, xmin+0.5, xmax-0.5);
-      svg += textSvg(mapper, cx, RIVER_W/2, '≫', 'flow-chevron', -6, 5);
+      svg += textSvg(mapper, cx, RIVER_W/2, chevron, 'flow-chevron', reversed ? 6 : -6, 5);
     }
     if(drawStart){
       svg += dotSvgPt(mapper, 0,0, 6, 'pt-boat-start');
@@ -448,25 +653,40 @@
   }
 
   // 출발 전(또는 도착 후 정지 상태)에 조건을 바꾸면 보트를 출발 지점으로 되돌린다
-  function resetBoatIfIdle(){ if(!addState.animating) addState.boatPos = null; }
+  function resetBoatIfIdle(){ if(!addState.animating){ addState.boatPos = null; addState.arrived = false; } }
 
-  function addAimOnDown(e){ if(addState.animating) return; addAimDragging = true; e.preventDefault(); }
-  addSvg.addEventListener('pointermove', e=>{
-    if(!addAimDragging || addState.animating) return;
+  function setAimFromEvent(e){
     const px = svgPointFromEvent(addSvg, e);
     const m = addInv(px.x, px.y);
     addState.aimX = clamp(m.x, ADD_XMIN, ADD_XMAX);
     addAimSlider.value = addState.aimX;
     resetBoatIfIdle();
     renderAdd(); renderAddCalc();
+  }
+  function addAimOnDown(e){
+    if(addState.animating) return;
+    addAimDragging = true;
+    e.preventDefault();
+    setAimFromEvent(e); // 클릭한 순간 바로 그 위치로 스냅 — 드래그를 시작해야만 반응하던 어색함 제거
+  }
+  addSvg.addEventListener('pointermove', e=>{
+    if(!addAimDragging || addState.animating) return;
+    setAimFromEvent(e);
   });
   window.addEventListener('pointerup', ()=>{ addAimDragging=false; });
 
   function renderAdd(){
     const b = computeAddBoatVec(), c = addState.river;
     const rx = b.x + c, ry = b.y;
-    let svg = riverBaseSvg(addMap, ADD_XMIN, ADD_XMAX, addState.flowPhase, false);
+    let svg = riverBaseSvg(addMap, ADD_XMIN, ADD_XMAX, addState.flowPhase, false, c < 0);
     if(showGridAdd) svg += gridOverlaySvg(addMap, ADD_XMIN, ADD_XMAX, -1, RIVER_W+1);
+
+    // 보트 게임 목표 지점 — 게임 진행 중에는 항상 보이게 해서 조준할 수 있게 한다
+    if(gameState.active){
+      const tp = addMap(gameState.targetX, RIVER_W);
+      svg += `<circle cx="${tp.x}" cy="${tp.y}" r="10" class="pt-game-target"/>`;
+      svg += `<text x="${tp.x}" y="${tp.y-16}" class="game-target-emoji" text-anchor="middle">🎯</text>`;
+    }
 
     if(addState.method === 'para'){
       svg += lineSvg(addMap, b.x,b.y, rx,ry, 'vec-guide');
@@ -477,34 +697,39 @@
       svg += arrowSvg(addMap, 0,0, b.x,b.y, 'vec-boat');
       svg += arrowSvg(addMap, b.x,b.y, rx,ry, 'vec-river');
     }
-    svg += arrowSvg(addMap, 0,0, rx,ry, 'vec-result');
+    // 실제(합성)벡터 화살표 — 보트가 맞은편에 도착하기 전까지는 숨겨서, 도착 순간에 결과로서 드러나게 한다
+    if(addState.arrived) svg += arrowSvg(addMap, 0,0, rx,ry, 'vec-result');
 
-    // landing path along resultant to far bank
+    // landing path along resultant to far bank — 마찬가지로 도착 후에만 표시
     let landX = null;
     if(ry > 0.3){
       const t = RIVER_W/ry;
       landX = t*rx;
-      svg += lineSvg(addMap, 0,0, landX, RIVER_W, 'vec-path');
-      svg += dotSvgPt(addMap, landX, RIVER_W, 6, 'pt-land');
-      svg += textSvg(addMap, landX, RIVER_W, '실제 도착', 'pt-label-small', 8, -8);
+      if(addState.arrived){
+        svg += lineSvg(addMap, 0,0, landX, RIVER_W, 'vec-path');
+        svg += dotSvgPt(addMap, landX, RIVER_W, 6, 'pt-land');
+        svg += textSvg(addMap, landX, RIVER_W, '실제 도착', 'pt-label-small', 8, -8);
+      }
     }
 
-    // 보트 운전 방향 핸들: 맞은편 선분 위에서 드래그하는 반투명 보트 이모지 (선분보다 살짝 위에 떠 있도록 표시)
-    const AIM_LIFT = 14;
+    // 보트 운전 방향 핸들: 맞은편 선분(위쪽 강둑) 위에서 드래그하는 반투명 보트 이모지
     const aimP = addMap(addState.aimX, RIVER_W);
-    svg += `<circle cx="${aimP.x}" cy="${aimP.y-AIM_LIFT}" r="15" fill="rgba(0,0,0,0)" id="addAimHandle" class="drag-hit"/>`;
-    svg += `<text x="${aimP.x}" y="${aimP.y-AIM_LIFT}" class="boat-emoji-ghost" text-anchor="middle" dominant-baseline="central">🚤</text>`;
-    svg += textSvg(addMap, addState.aimX, RIVER_W, '보트 운전 방향', 'pt-label-ghost', -30, -18-AIM_LIFT);
+    svg += `<circle cx="${aimP.x}" cy="${aimP.y}" r="26" fill="rgba(0,0,0,0)" id="addAimHandle" class="drag-hit"/>`;
+    svg += `<text x="${aimP.x}" y="${aimP.y}" class="boat-emoji-ghost" text-anchor="middle" dominant-baseline="central">🚤</text>`;
+    svg += textSvg(addMap, addState.aimX, RIVER_W, '보트 운전 방향', 'pt-label-ghost', -30, -18);
 
-    // the actual boat: resting at start, animating toward the landing point, or resting there after arrival
+    // the actual boat: resting at start(아래쪽 강둑), animating toward the landing point, or resting there after arrival
     const bp = addState.boatPos || {x:0,y:0};
     const boatP = addMap(bp.x, bp.y);
     svg += `<text x="${boatP.x}" y="${boatP.y}" class="boat-emoji" text-anchor="middle" dominant-baseline="central">🚤</text>`;
     if(!addState.animating && !addState.boatPos) svg += textSvg(addMap, 0,0, '출발', 'pt-label-small', -22, 22);
 
-    svg += textSvg(addMap, b.x,b.y, KXsvgSafe('v_보트'), 'pt-label-boat', 8,-8);
-    svg += textSvg(addMap, c,0, KXsvgSafe('v_물살'), 'pt-label-river', 6,16);
-    svg += textSvg(addMap, rx,ry, KXsvgSafe('v_실제'), 'pt-label-result', 8,-10);
+    // 물살 라벨은 실제로 그려지는 주황 화살표(작도법에 따라 위치가 다르다) 위쪽에, 보트 라벨은 빨간 화살표 왼쪽에 붙인다
+    const riverMidX = addState.method==='para' ? c/2 : b.x + c/2;
+    const riverMidY = addState.method==='para' ? 0 : b.y;
+    svg += vecLabelSvg(addMap, b.x/2, b.y/2, String.raw`\vec{v}_{보트}`, 'vec-label-boat', -6,0, 'right');
+    svg += vecLabelSvg(addMap, riverMidX, riverMidY, String.raw`\vec{v}_{물살}`, 'vec-label-river', -20,-9);
+    if(addState.arrived) svg += vecLabelSvg(addMap, rx,ry, String.raw`\vec{v}_{실제}`, 'vec-label-result', 8,-10);
 
     addDynamic.innerHTML = svg;
     const aimHandle = document.getElementById('addAimHandle');
@@ -526,12 +751,22 @@
   }
 
   function setAddControlsDisabled(disabled){
-    addAimSlider.disabled = disabled;
-    addRiverInput.disabled = disabled;
-    addSpeedSlider.disabled = disabled;
+    if(!gameState.active){
+      addAimSlider.disabled = disabled;
+      addRiverInput.disabled = disabled;
+      addSpeedSlider.disabled = disabled;
+    } else if(disabled){
+      addAimSlider.disabled = addRiverInput.disabled = addSpeedSlider.disabled = true;
+    } else {
+      // 애니메이션이 끝나면 게임 라운드가 정한 대로 한 가지 조작만 다시 풀어준다
+      addAimSlider.disabled = gameState.freeParam !== 'aim';
+      addRiverInput.disabled = gameState.freeParam !== 'river';
+      addSpeedSlider.disabled = gameState.freeParam !== 'speed';
+    }
     btnMethodTri.disabled = disabled;
     btnMethodPara.disabled = disabled;
     btnDepart.disabled = disabled;
+    btnResetGame.disabled = disabled || !gameState.active;
     btnDepart.textContent = disabled ? '🚤 이동 중...' : '🚤 보트 출발하기';
   }
 
@@ -545,6 +780,8 @@
 
     addState.animating = true;
     addState.boatPos = {x:0,y:0};
+    addState.arrived = false;
+    if(gameState.active){ gameState.attempt++; renderGamePanel(); }
     setAddControlsDisabled(true);
 
     // 보트 속력(addState.speed)이 클수록 짧은 시간에 도착 — 기준 속력 5일 때 약 2.2초
@@ -563,21 +800,29 @@
       renderAdd();
       if(tt < 1) requestAnimationFrame(frame);
       else {
-        // 도착 후에는 보트를 실제 도착 지점에 그대로 멈춰 둔다 (원점으로 되돌리지 않음)
+        // 도착 후에는 보트를 실제 도착 지점에 그대로 멈춰 두고, 실제벡터/도착 지점을 결과로서 드러낸다
         addState.boatPos = { x: landX, y: RIVER_W };
         addState.animating = false;
+        addState.arrived = true;
         setAddControlsDisabled(false);
         renderAdd();
+
+        if(gameState.active){
+          const hitPlayer = gameState.currentPlayer;
+          if(Math.abs(landX - gameState.targetX) <= GAME_TOLERANCE){
+            gameState.scores[hitPlayer-1]++;
+            renderGamePanel();
+            gamePopupMsg.textContent = `플레이어 ${hitPlayer}, 목표 지점에 정확히 도착했어요!`;
+            gamePopupOverlay.classList.add('on');
+          } else {
+            advanceGameTurn();
+          }
+        }
       }
     }
     requestAnimationFrame(frame);
   }
   btnDepart.addEventListener('click', departBoat);
-
-  function KXsvgSafe(name){
-    const map = { 'v_보트':'v→ 보트', 'v_물살':'v→ 물살', 'v_실제':'v→ 실제' };
-    return map[name] || name;
-  }
 
   addAimSlider.addEventListener('input', ()=>{
     addState.aimX = +addAimSlider.value;
@@ -644,9 +889,9 @@
 
     svg += dotSvgPt(subMap, 0, RIVER_W, 5, 'pt-target-ghost');
     svg += textSvg(subMap, 0, RIVER_W, '목표(맞은편)', 'pt-label-ghost', -40, -8);
-    svg += textSvg(subMap, 0,vt, KXsvgSafe('v_실제'), 'pt-label-result', 8,-8);
+    svg += vecLabelSvg(subMap, 0,vt, String.raw`\vec{v}_{실제}`, 'vec-label-result', 8,-8);
     svg += textSvg(subMap, needX,needY, '필요한 지점', 'pt-label-small', 8,-10);
-    svg += textSvg(subMap, b.x,b.y, KXsvgSafe('v_보트'), 'pt-label-boat', 8,-8);
+    svg += vecLabelSvg(subMap, b.x,b.y, String.raw`\vec{v}_{보트}`, 'vec-label-boat', 8,-8);
 
     subDynamic.innerHTML = svg;
     subDynamic.innerHTML += `<circle cx="${subMap(b.x,b.y).x}" cy="${subMap(b.x,b.y).y}" r="8" class="drag-handle" id="subHandle"/>`;
@@ -784,10 +1029,16 @@
     .pt-label-river { font-size:12px; font-weight:700; fill:#e08a3c; font-family:'Inter',sans-serif; }
     .pt-label-small { font-size:11px; font-weight:600; fill:#555; font-family:'Inter',sans-serif; }
     .pt-label-ghost { font-size:11px; font-weight:600; fill:#2f6ea0; opacity:0.7; font-family:'Inter',sans-serif; }
+    /* SVG 위에 실제 벡터 화살표(→)를 KaTeX로 정확히 그리기 위한 foreignObject 라벨 */
+    foreignObject.vec-label-fo { overflow: visible; pointer-events: none; }
+    .vec-label-html { display:flex; width:100%; align-items:baseline; font-family:'Inter',sans-serif; font-weight:700; white-space:nowrap; line-height:1; }
+    .vec-label-html .katex { font-size:1.05em; }
+    .vec-label-boat, .vec-label-result { color:#6a4a9a; font-size:13px; }
+    .vec-label-river { color:#e08a3c; font-size:12px; }
     .drag-handle { fill:#d24a4a; cursor:grab; }
-    .drag-hit { cursor:grab; }
+    .drag-hit { cursor:grab; pointer-events:all; }
     .boat-emoji { font-size:22px; }
-    .boat-emoji-ghost { font-size:20px; opacity:0.45; }
+    .boat-emoji-ghost { font-size:20px; opacity:0.45; pointer-events:none; }
     .grid-line { stroke:#9878c0; stroke-width:0.6; opacity:0.28; }
     .grid-axis { stroke:#6a4a9a; stroke-width:1.1; opacity:0.55; }
     .grid-tick { font-size:9px; fill:#8a6ab8; font-family:'Inter',sans-serif; }
@@ -842,7 +1093,7 @@
   ];
 
   function quizDiagramSvg(vecs){
-    const VB=180, PAD=28;
+    const VB=180, PAD=30;
     let xs=[0], ys=[0];
     vecs.forEach(v=>{ xs.push(v.x); ys.push(v.y); });
     const minX=Math.min(...xs), maxX=Math.max(...xs), minY=Math.min(...ys), maxY=Math.max(...ys);
@@ -851,9 +1102,10 @@
     const midX=(minX+maxX)/2, midY=(minY+maxY)/2;
     const map = (x,y)=>({ x: VB/2 + (x-midX)*scale, y: VB/2 - (y-midY)*scale });
     let svg = `<svg viewBox="0 0 ${VB} ${VB}" class="quiz-diagram">`;
-    const o = map(0,0);
-    svg += `<line x1="0" y1="${o.y}" x2="${VB}" y2="${o.y}" class="qd-axis"/>`;
-    svg += `<line x1="${o.x}" y1="0" x2="${o.x}" y2="${VB}" class="qd-axis"/>`;
+    // 좌표평면(정수 눈금)을 넣어서 벡터의 좌표를 직접 읽고 덧셈/뺄셈/내적을 계산해 볼 수 있게 한다
+    const gxMin = Math.floor(minX-1), gxMax = Math.ceil(maxX+1);
+    const gyMin = Math.floor(minY-1), gyMax = Math.ceil(maxY+1);
+    svg += gridOverlaySvg(map, gxMin, gxMax, gyMin, gyMax);
     vecs.forEach(v=>{ svg += arrowSvg(map, 0,0, v.x,v.y, v.cls); svg += textSvg(map, v.x,v.y, v.label, 'qd-label', 6,-6); });
     svg += `</svg>`;
     return svg;
@@ -931,7 +1183,6 @@
 
   const qdStyle = document.createElement('style');
   qdStyle.textContent = `
-    .qd-axis { stroke:#c8b4e8; stroke-width:1; opacity:0.5; }
     .qd-label { font-size:12px; font-weight:700; fill:#6a4a9a; font-family:'Inter',sans-serif; }
   `;
   document.head.appendChild(qdStyle);
