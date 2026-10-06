@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정사영 탐구실 — 재미있는 수학 콘텐츠</title>
+<link rel="icon" type="image/svg+xml" href="../favicon.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black:       #111111;
+    --gray:        #666666;
+    --bg:          #fafafa;
+    --white:       #ffffff;
+    --accent1:     #d8c8f0;
+    --accent2:     #c8b4e8;
+    --accent3:     #9878c0;
+    --accent4:     #f0eaff;
+    --text-accent: #6a4a9a;
+    --good:        #2f9e5c;
+    --bad:         #d24a4a;
+    --shadow-sm:   0 2px 12px rgba(0,0,0,0.07);
+  }
+
+  body {
+    font-family: 'Inter', 'Apple SD Gothic Neo', sans-serif;
+    background: var(--bg);
+    color: var(--black);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.25rem 3rem; border-bottom: 1px solid #e8e8e8;
+    background: var(--bg); position: sticky; top: 0; z-index: 100;
+  }
+  .nav-logo { font-size:1.05rem; font-weight:700; letter-spacing:-0.02em; text-decoration:none; color:var(--black); }
+  .btn-home {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600;
+    padding: 0.5rem 1.1rem; border: 1.5px solid var(--black); border-radius: 999px;
+    background: transparent; cursor: pointer; text-decoration: none; color: var(--black);
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-home:hover { background: var(--black); color: #fff; }
+
+  /* ── HERO ── */
+  .hero { text-align: center; padding: 4rem 2rem 2.5rem; position: relative; overflow: hidden; }
+  .deco { position:absolute; pointer-events:none; animation: float 4s ease-in-out infinite; }
+  @keyframes float {
+    0%,100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-12px) rotate(8deg); }
+  }
+  .deco-1 { top:20%; left:6%;   animation-delay:0s;   }
+  .deco-2 { top:12%; left:18%;  animation-delay:0.6s; }
+  .deco-3 { top:20%; right:7%;  animation-delay:1.2s; }
+  .deco-4 { top:8%;  right:20%; animation-delay:0.3s; }
+  .hero-tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 600;
+    background: var(--accent1); color: var(--text-accent);
+    padding: 0.3rem 0.9rem; border-radius: 999px; letter-spacing: 0.04em; margin-bottom: 1.1rem;
+  }
+  .hero h1 { font-size: clamp(2rem, 6vw, 3.6rem); font-weight: 900; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 1.1rem; }
+  .hero-desc { font-size: 0.97rem; color: var(--gray); line-height: 1.85; max-width: 640px; margin: 0 auto; word-break: keep-all; overflow-wrap: break-word; }
+
+  /* ── MAIN ── */
+  .main { max-width: 1080px; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+  .section-card { background: var(--white); border-radius: 20px; box-shadow: var(--shadow-sm); padding: 1.6rem 1.8rem; margin-bottom: 1.2rem; }
+  .section-title {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; color: var(--text-accent);
+    text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::before { content:''; display:inline-block; width:3px; height:14px; background:var(--accent3); border-radius:2px; }
+
+  .steps { list-style:none; counter-reset: step; }
+  .steps li { counter-increment: step; padding-left:2.2rem; position:relative; margin-bottom:0.7rem; font-size:0.92rem; line-height:1.6; color:#333; }
+  .steps li::before {
+    content: counter(step); position:absolute; left:0; top:0; width:1.6rem; height:1.6rem;
+    background:var(--accent1); color:var(--text-accent); border-radius:50%; font-weight:700; font-size:0.78rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .materials { font-size:0.85rem; color:var(--gray); margin-bottom:0.9rem; line-height:1.7; }
+  .materials b { color:var(--black); }
+
+  .sim-grid { display:grid; grid-template-columns: 360px 240px 1fr; gap:1.4rem; align-items:start; }
+  .stage-wrap { background:var(--accent4); border-radius:16px; padding:0.6rem; }
+  svg.stage { width:100%; height:auto; display:block; cursor:grab; touch-action:none; }
+  .stage-wrap.dragging svg.stage { cursor:grabbing; }
+
+  .ortho-wrap { background:var(--accent4); border-radius:16px; padding:0.6rem; display:flex; flex-direction:column; }
+  .ortho-label { font-size:0.74rem; font-weight:700; color:var(--text-accent); margin-bottom:0.4rem; text-align:center; }
+  svg.stage-ortho { width:100%; height:auto; display:block; }
+
+  .ctrl-row { margin-bottom:1.1rem; }
+  .ctrl-row label { display:block; font-size:0.82rem; font-weight:600; color:var(--gray); margin-bottom:0.4rem; }
+  .ctrl-row select {
+    width:100%; font-family:'Inter',sans-serif; font-size:0.88rem; font-weight:600; color:var(--black);
+    padding:0.5rem 0.7rem; border-radius:8px; border:1.5px solid var(--accent3); background:#fff; cursor:pointer;
+  }
+  input[type="range"] { width:100%; accent-color: var(--accent3); }
+  .axis-row label { display:flex; align-items:center; gap:0.5rem; font-size:0.82rem; font-weight:600; color:var(--gray); margin-bottom:0.4rem; }
+  .axis-row input[type="checkbox"] { width:16px; height:16px; accent-color:var(--accent3); cursor:pointer; }
+  .btn-row { display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1rem; }
+  .btn-ctrl {
+    font-family:'Inter',sans-serif; font-size:0.82rem; font-weight:700;
+    padding:0.55rem 1rem; border-radius:8px; border:1.5px solid var(--accent3);
+    background:#fff; color:var(--text-accent); cursor:pointer; transition:.2s;
+  }
+  .btn-ctrl:hover { background:var(--accent4); }
+  .btn-ctrl.active { background:var(--accent3); color:#fff; }
+
+  .info-box { background:var(--bg); border-radius:12px; padding:0.9rem 1.1rem; font-size:0.85rem; line-height:2.1; color:#333; }
+  .info-box .katex { font-size: 1.05em; }
+  .info-box .success { color: var(--good); font-weight:700; }
+  .info-box .warn { color: var(--bad); font-weight:700; }
+
+  .proof-text p { font-size:0.9rem; line-height:1.9; color:#333; margin-bottom:0.5rem; }
+  .proof-formula { display:block; background:var(--bg); border-radius:10px; padding:0.7rem 1rem; margin:0.6rem 0; font-weight:700; color:var(--text-accent); }
+  .proof-formula .katex { font-size: 1.1em; color: inherit; }
+
+  /* quiz */
+  .quiz-progress { font-size:0.8rem; color:var(--gray); margin-bottom:0.8rem; font-weight:600; }
+  .quiz-badge { display:inline-block; font-size:0.7rem; font-weight:700; background:var(--accent1); color:var(--text-accent); padding:0.2rem 0.7rem; border-radius:999px; margin-bottom:0.7rem; }
+  .quiz-prompt { font-size:1rem; font-weight:700; margin-bottom:1rem; line-height:1.8; }
+  .choice-btn {
+    display:flex; align-items:center; width:100%; text-align:left; font-family:'Inter',sans-serif; font-size:0.92rem; font-weight:600;
+    padding:0.75rem 1.1rem; margin-bottom:0.6rem; border-radius:10px; border:1.5px solid #ddd;
+    background:#fff; color:var(--black); cursor:pointer; transition:.15s;
+  }
+  .choice-btn:hover:not(:disabled) { background:var(--accent4); border-color:var(--accent3); }
+  .choice-btn:disabled { cursor:default; }
+  .choice-btn.correct { background:#e4f7ea; border-color:var(--good); color:var(--good); }
+  .choice-btn.wrong { background:#fbe8e8; border-color:var(--bad); color:var(--bad); }
+  .quiz-explain { font-size:0.85rem; line-height:1.8; color:#333; background:var(--bg); border-radius:10px; padding:0.8rem 1rem; margin-top:0.6rem; }
+  .quiz-result { text-align:center; padding:1.5rem 0; }
+  .quiz-result .score { font-size:2.2rem; font-weight:900; color:var(--text-accent); margin-bottom:0.6rem; }
+
+  /* scene */
+  .floor-plane  { fill:#c8b4e8; opacity:0.3; stroke:#9878c0; stroke-width:1; }
+  .floor-grid   { stroke:#9878c0; stroke-width:0.6; opacity:0.22; }
+  .obj-face     { fill:#7050a8; opacity:0.22; stroke:#6a4a9a; stroke-width:1; }
+  .obj-wire     { fill:none; stroke:#7050a8; stroke-width:1.6; opacity:0.9; }
+  .obj-silhouette { fill:#7050a8; opacity:0.28; stroke:#6a4a9a; stroke-width:1.2; }
+  .obj-guide    { fill:none; stroke:#6a4a9a; stroke-width:1; stroke-dasharray:4,3; opacity:0.55; }
+  .obj-rim      { fill:none; stroke:#6a4a9a; stroke-width:1.6; opacity:0.85; }
+  .drop-line    { stroke:#9878c0; stroke-width:1; stroke-dasharray:3,3; opacity:0.55; }
+  .light-arrow      { stroke:#9878c0; stroke-width:1.6; opacity:0.85; }
+  .light-arrow-head { fill:#9878c0; opacity:0.9; }
+  .light-arrow-label { font-size:11px; font-weight:700; fill:#6a4a9a; font-family:'Inter',sans-serif; text-anchor:middle; }
+  .shadow-main      { fill:#2f9e5c; opacity:0.45; stroke:#2f9e5c; stroke-width:2; }
+  .shadow-main-line { stroke:#2f9e5c; stroke-width:3; }
+  .shadow-main-dot  { fill:#2f9e5c; }
+  .scene-label    { font-size:13px; font-weight:700; fill:#6a4a9a; font-family:'Inter',sans-serif; font-style:italic; }
+  .scene-label-sm { font-size:11px; font-weight:600; fill:#666; font-family:'Inter',sans-serif; }
+
+  .ortho-axis       { stroke:#9878c0; stroke-width:1.2; opacity:0.6; }
+  .ortho-grid       { stroke:#9878c0; stroke-width:0.5; opacity:0.18; }
+  .ortho-axis-label { font-size:11px; fill:#6a4a9a; font-weight:700; font-family:'Inter',sans-serif; }
+  .ortho-fill       { fill:#2f9e5c; opacity:0.5; stroke:#2f9e5c; stroke-width:2; }
+  .ortho-fill-line  { stroke:#2f9e5c; stroke-width:3; }
+  .ortho-fill-dot   { fill:#2f9e5c; }
+
+  @media (max-width: 900px) {
+    .sim-grid { grid-template-columns: 1fr; gap: 1rem; }
+    .ortho-wrap { max-width: 300px; margin: 0 auto; width: 100%; }
+  }
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.25rem; }
+    .hero { padding: 3rem 1.25rem 2rem; }
+    .main { padding: 0 1rem 4rem; }
+    .deco-1, .deco-2 { display:none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">∑ 재미있는 수학 콘텐츠</a>
+  <a href="../index.html" class="btn-home">← 홈으로</a>
+</nav>
+
+<section class="hero">
+  <svg class="deco deco-1" width="24" height="24" viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9" fill="#d8c8f0" opacity="0.85"/></svg>
+  <svg class="deco deco-2" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#c8b4e8" opacity="0.75"/></svg>
+  <svg class="deco deco-3" width="20" height="20" viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" rx="3" fill="#9878c0" opacity="0.5" transform="rotate(18 10 10)"/></svg>
+  <svg class="deco deco-4" width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#d8c8f0" opacity="0.8"/></svg>
+
+  <span class="hero-tag">고등수학 · 기하</span>
+  <h1>도형을 돌리며 보는 정사영</h1>
+  <p class="hero-desc">바닥과 수직으로 내려오는 평행한 빛 아래, 떠 있는 도형의 그림자가 곧 그 도형의 <b>정사영</b>입니다.<br>도형을 바꾸고 돌려보면서 정사영이 어떻게 달라지는지 직접 확인해보세요.</p>
+</section>
+
+<div class="main">
+
+  <!-- STEP 1 -->
+  <div class="section-card">
+    <div class="section-title">Step 1 · 상황 이해하기</div>
+    <p class="materials"><b>상황</b> · 바닥 위에 떠 있는 도형에, 바닥과 항상 수직인 평행한 빛이 균일하게 내려옵니다.</p>
+    <ol class="steps">
+      <li>이제 광원(전구)의 위치는 아예 존재하지 않습니다 — 모든 빛은 항상 바닥과 수직으로, 서로 평행하게 내려옵니다.</li>
+      <li>도형의 각 점에서 바닥에 내린 수선의 발들을 모은 도형을 그 도형의 <b>정사영</b>이라고 부릅니다. 바닥 위에 색칠된 부분이 바로 그 정사영입니다.</li>
+      <li>아래에서 도형(정사면체 · 정육면체 · 구 · 반구 · 2차원 원 · 직각삼각형 · 선분)을 골라보고, x/y/z축 회전 체크박스나 슬라이더로 도형을 돌려가며 정사영이 어떻게 달라지는지 관찰해보세요.</li>
+      <li>가운데 작은 좌표평면 패널은 지금 정사영을 <b>항상 바닥에 수직한 위쪽에서 내려다본 모습</b>입니다. 왼쪽 큰 그림을 마우스로 돌리거나 휠/핀치로 확대·축소해도 이 패널은 바뀌지 않습니다 — 도형을 실제로 회전시켜야만 바뀝니다.</li>
+    </ol>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="section-card">
+    <div class="section-title">Step 2 · 직접 움직여보기</div>
+    <div class="sim-grid">
+      <div class="stage-wrap">
+        <svg class="stage" id="stageSvg" viewBox="0 0 500 560">
+          <defs>
+            <clipPath id="stageClip"><rect x="0" y="48" width="500" height="512"/></clipPath>
+          </defs>
+          <g class="light-arrow-legend">
+            <text x="250" y="16" class="light-arrow-label">평행광 (바닥과 항상 수직)</text>
+            <line x1="130" y1="22" x2="130" y2="36" class="light-arrow"/>
+            <polygon points="130,36 126,28 134,28" class="light-arrow-head"/>
+            <line x1="190" y1="22" x2="190" y2="36" class="light-arrow"/>
+            <polygon points="190,36 186,28 194,28" class="light-arrow-head"/>
+            <line x1="250" y1="22" x2="250" y2="36" class="light-arrow"/>
+            <polygon points="250,36 246,28 254,28" class="light-arrow-head"/>
+            <line x1="310" y1="22" x2="310" y2="36" class="light-arrow"/>
+            <polygon points="310,36 306,28 314,28" class="light-arrow-head"/>
+            <line x1="370" y1="22" x2="370" y2="36" class="light-arrow"/>
+            <polygon points="370,36 366,28 374,28" class="light-arrow-head"/>
+          </g>
+          <g id="stageDynamic" clip-path="url(#stageClip)"></g>
+        </svg>
+      </div>
+      <div class="ortho-wrap">
+        <div class="ortho-label">정사영 — 항상 바닥에 수직한 위에서 본 모습</div>
+        <svg class="stage-ortho" id="orthoSvg" viewBox="0 0 260 260">
+          <g id="orthoDynamic"></g>
+        </svg>
+      </div>
+      <div>
+        <div class="ctrl-row">
+          <label>도형 선택 — 정사영을 관찰할 도형을 골라보세요</label>
+          <select id="shapeSelect">
+            <option value="tetra">정사면체</option>
+            <option value="cube">정육면체</option>
+            <option value="sphere">구</option>
+            <option value="hemi">반구</option>
+            <option value="circle">2차원 원</option>
+            <option value="rtri">2차원 직각삼각형</option>
+            <option value="segment">선분</option>
+          </select>
+        </div>
+        <div class="ctrl-row axis-row">
+          <label><input type="checkbox" id="animXCheck"> x축 자동 회전</label>
+          <input type="range" id="rotXSlider" min="0" max="359" step="1" value="0">
+        </div>
+        <div class="ctrl-row axis-row">
+          <label><input type="checkbox" id="animYCheck"> y축 자동 회전</label>
+          <input type="range" id="rotYSlider" min="0" max="359" step="1" value="0">
+        </div>
+        <div class="ctrl-row axis-row">
+          <label><input type="checkbox" id="animZCheck"> z축 자동 회전</label>
+          <input type="range" id="rotZSlider" min="0" max="359" step="1" value="0">
+        </div>
+        <div class="btn-row">
+          <button class="btn-ctrl" id="btnResetAll">↺ 전체 초기화</button>
+        </div>
+        <div class="materials">🖱 드래그로 시점 회전, 마우스 휠로 확대/축소 (모바일은 두 손가락 핀치). 체크박스를 켜면 해당 축으로 도형이 계속 회전하고, 끄면 슬라이더로 각도를 직접 조절할 수 있어요.</div>
+        <div class="info-box" id="infoBox"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="section-card">
+    <div class="section-title">Step 3 · 계산으로 확인하기</div>
+    <div class="proof-text" id="proofStatic"></div>
+    <div class="info-box" id="calcBox" style="margin-top:0.8rem;"></div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="section-card">
+    <div class="section-title">Step 4 · 정사영 퀴즈</div>
+    <div id="quizArea"></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script>
+(function(){
+  function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+  function numFmt(n, maxDecimals){
+    if(maxDecimals===undefined) maxDecimals = 2;
+    let s = (+n).toFixed(maxDecimals);
+    if(s.indexOf('.')>=0) s = s.replace(/0+$/,'').replace(/\.$/,'');
+    if(s === '-0') s = '0';
+    return s;
+  }
+  function KX(latex){
+    if(window.katex){
+      try { return katex.renderToString(latex, { throwOnError:false }); }
+      catch(e){ /* fall through */ }
+    }
+    return latex;
+  }
+
+  /* ═══ 3D → 2D 사영 (바닥을 z=0 평면으로 두고, 방위각·고도각으로 회전한 뒤 정투영) ═══ */
+  const ORIGIN = { x:250, y:460 };
+  const SCALE = 6;
+  const EL_MIN = 8*Math.PI/180, EL_MAX = 85*Math.PI/180;
+  const EL_DEFAULT = 30*Math.PI/180;
+  const view = { az:0, el:EL_DEFAULT };
+  const ZOOM_DEFAULT = 2;
+  const zoomState = { k:ZOOM_DEFAULT, MIN:0.5, MAX:3.5 };
+
+  function proj(x,y,z){
+    const cosA=Math.cos(view.az), sinA=Math.sin(view.az);
+    const x1 = x*cosA - y*sinA;
+    const y1 = x*sinA + y*cosA;
+    const cosE=Math.cos(view.el), sinE=Math.sin(view.el);
+    const z2 = y1*sinE + z*cosE;
+    const s = SCALE*zoomState.k;
+    return { x: ORIGIN.x + x1*s, y: ORIGIN.y - z2*s };
+  }
+  function poly(pts, cls){
+    return `<polygon points="${pts.map(p=>p.x+','+p.y).join(' ')}" class="${cls}"/>`;
+  }
+  function polyline(pts, cls){
+    return `<polyline points="${pts.map(p=>p.x+','+p.y).join(' ')}" class="${cls}"/>`;
+  }
+  function labelAt(p, text, cls, dx, dy){
+    return `<text x="${p.x+(dx||0)}" y="${p.y+(dy||0)}" class="${cls}">${text}</text>`;
+  }
+  function polyArea2D(pts){
+    let s = 0;
+    for(let i=0;i<pts.length;i++){
+      const p=pts[i], q=pts[(i+1)%pts.length];
+      s += p.x*q.y - q.x*p.y;
+    }
+    return Math.abs(s)/2;
+  }
+
+  const FLOOR_HALF = 12, FLOOR_GRID_STEP = 4;
+
+  /* ═══ 회전 (x→y→z 순서, Tait-Bryan) ═══ */
+  function rad(d){ return d*Math.PI/180; }
+  function rotateXYZ(p, rx, ry, rz){
+    let {x,y,z} = p;
+    let c=Math.cos(rx), s=Math.sin(rx); [y,z] = [y*c-z*s, y*s+z*c];
+    c=Math.cos(ry); s=Math.sin(ry); [x,z] = [x*c+z*s, -x*s+z*c];
+    c=Math.cos(rz); s=Math.sin(rz); [x,y] = [x*c-y*s, x*s+y*c];
+    return {x,y,z};
+  }
+  function applyRot(p, rotDeg){
+    return rotateXYZ(p, rad(rotDeg.x), rad(rotDeg.y), rad(rotDeg.z));
+  }
+  function tiltAngleDeg(refVec, rotDeg){
+    const n = applyRot(refVec, rotDeg);
+    const cosT = clamp(Math.abs(n.z), 0, 1);
+    return Math.acos(cosT)*180/Math.PI;
+  }
+
+  /* ═══ 도형 생성 (로컬 좌표, 중심 기준) ═══ */
+  const CIRCLE_R = 3.0, RTRI_A = 4.6, RTRI_B = 3.1, SEGMENT_HALF = 3.5, SPHERE_R = 3.0;
+  const TETRA_EDGE = 5.4, CUBE_S = 2.0;
+  const ELEV_MARGIN = 2.2;
+
+  function buildTetra(){
+    // 밑면(정삼각형)이 z=상수 평면에 놓이고 꼭짓점이 그 위에 있는, 밑면이 수평인 정사면체.
+    const A = TETRA_EDGE;                // 모서리 길이
+    const r = A/Math.sqrt(3);            // 밑면 외접원 반지름
+    const H = A*Math.sqrt(2/3);          // 밑면~꼭짓점 높이
+    const z0 = -H/4, zApex = 3*H/4;      // 무게중심이 원점에 오도록 이동
+    const V = [
+      { x:r, y:0, z:z0 },
+      { x:-r/2, y: r*Math.sqrt(3)/2, z:z0 },
+      { x:-r/2, y:-r*Math.sqrt(3)/2, z:z0 },
+      { x:0, y:0, z:zApex }
+    ];
+    return { verts:V, edges:[[0,1],[1,2],[2,0],[0,3],[1,3],[2,3]], faces:[[0,1,2],[0,1,3],[1,2,3],[2,0,3]], showDropLines:true };
+  }
+  function buildCube(){
+    const s = CUBE_S;
+    const V = [
+      {x:-s,y:-s,z:-s}, {x: s,y:-s,z:-s}, {x: s,y: s,z:-s}, {x:-s,y: s,z:-s},
+      {x:-s,y:-s,z: s}, {x: s,y:-s,z: s}, {x: s,y: s,z: s}, {x:-s,y: s,z: s}
+    ];
+    const edges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    const faces = [[0,1,2,3],[4,5,6,7],[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7]];
+    return { verts:V, edges, faces, showDropLines:true };
+  }
+  function buildSphere(){
+    const R = SPHERE_R, LON = 16, LAT = 10;
+    const V = [], edges = [];
+    const idx = (i,j)=> i*LON + (j%LON);
+    for(let i=0;i<=LAT;i++){
+      const theta = Math.PI*i/LAT;
+      for(let j=0;j<LON;j++){
+        const phi = 2*Math.PI*j/LON;
+        V.push({ x:R*Math.sin(theta)*Math.cos(phi), y:R*Math.sin(theta)*Math.sin(phi), z:R*Math.cos(theta) });
+      }
+    }
+    for(let j=0;j<LON;j++) for(let i=0;i<LAT;i++) edges.push([idx(i,j), idx(i+1,j)]);
+    for(let i=1;i<LAT;i++) for(let j=0;j<LON;j++) edges.push([idx(i,j), idx(i,(j+1)%LON)]);
+    return { verts:V, edges, faces:null, showDropLines:false };
+  }
+  function buildHemisphere(){
+    const R = SPHERE_R, LON = 32, LAT = 16;
+    const V = [], edges = [];
+    const idx = (i,j)=> i*LON + (j%LON);
+    for(let i=0;i<=LAT;i++){
+      const theta = (Math.PI/2)*i/LAT;
+      for(let j=0;j<LON;j++){
+        const phi = 2*Math.PI*j/LON;
+        V.push({ x:R*Math.sin(theta)*Math.cos(phi), y:R*Math.sin(theta)*Math.sin(phi), z:R*Math.cos(theta) });
+      }
+    }
+    const centerIdx = V.length;
+    V.push({x:0,y:0,z:0});
+    for(let j=0;j<LON;j++) for(let i=0;i<LAT;i++) edges.push([idx(i,j), idx(i+1,j)]);
+    for(let i=1;i<=LAT;i++) for(let j=0;j<LON;j++) edges.push([idx(i,j), idx(i,(j+1)%LON)]);
+    for(let j=0;j<LON;j++) edges.push([idx(LAT,j), centerIdx]);
+    const faces = [];
+    for(let j=0;j<LON;j++) faces.push([idx(LAT,j), idx(LAT,(j+1)%LON), centerIdx]);
+    return { verts:V, edges, faces, showDropLines:false };
+  }
+  function buildCircle(){
+    const N = 160;
+    const V = [];
+    for(let i=0;i<N;i++){ const a = 2*Math.PI*i/N; V.push({x:CIRCLE_R*Math.cos(a), y:CIRCLE_R*Math.sin(a), z:0}); }
+    const edges = V.map((_,i)=>[i,(i+1)%N]);
+    const faces = [Array.from({length:N}, (_,i)=>i)];
+    return { verts:V, edges, faces, showDropLines:false };
+  }
+  function buildRightTriangle(){
+    const a = RTRI_A, b = RTRI_B;
+    const raw = [{x:0,y:0},{x:a,y:0},{x:0,y:b}];
+    const cx = a/3, cy = b/3;
+    const V = raw.map(p=>({x:p.x-cx, y:p.y-cy, z:0}));
+    return { verts:V, edges:[[0,1],[1,2],[2,0]], faces:[[0,1,2]], showDropLines:true };
+  }
+  function buildSegment(){
+    const L = SEGMENT_HALF;
+    const V = [{x:-L,y:0,z:0},{x:L,y:0,z:0}];
+    return { verts:V, edges:[[0,1]], faces:null, showDropLines:true };
+  }
+
+  const SHAPES = {
+    tetra:   { label:'정사면체',           kind:'solid', build:buildTetra,  bottomNormal:{x:0,y:0,z:-1}, baseArea: (Math.sqrt(3)/4)*TETRA_EDGE*TETRA_EDGE },
+    cube:    { label:'정육면체',           kind:'solid', build:buildCube,   bottomNormal:{x:0,y:0,z:-1}, baseArea: (2*CUBE_S)*(2*CUBE_S) },
+    sphere:  { label:'구',                 kind:'solid', build:buildSphere },
+    hemi:    { label:'반구',               kind:'solid', build:buildHemisphere, bottomNormal:{x:0,y:0,z:-1}, baseArea: Math.PI*SPHERE_R*SPHERE_R },
+    circle:  { label:'2차원 원',           kind:'flat', dim:2, build:buildCircle,        baseArea: Math.PI*CIRCLE_R*CIRCLE_R, bottomNormal:{x:0,y:0,z:1} },
+    rtri:    { label:'2차원 직각삼각형',    kind:'flat', dim:2, build:buildRightTriangle, baseArea: 0.5*RTRI_A*RTRI_B,         bottomNormal:{x:0,y:0,z:1} },
+    segment: { label:'선분',               kind:'flat', dim:1, build:buildSegment,       baseLen: 2*SEGMENT_HALF }
+  };
+
+  /* ═══ 2D 컨벡스헐 (Andrew's monotone chain) ═══ */
+  function convexHull2D(points){
+    const pts = points.slice().sort((a,b)=> a.x-b.x || a.y-b.y);
+    if(pts.length<=2) return pts;
+    const cross=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
+    const lower=[];
+    for(const p of pts){
+      while(lower.length>=2 && cross(lower[lower.length-2],lower[lower.length-1],p)<=0) lower.pop();
+      lower.push(p);
+    }
+    const upper=[];
+    for(let i=pts.length-1;i>=0;i--){
+      const p=pts[i];
+      while(upper.length>=2 && cross(upper[upper.length-2],upper[upper.length-1],p)<=0) upper.pop();
+      upper.push(p);
+    }
+    lower.pop(); upper.pop();
+    return lower.concat(upper);
+  }
+
+  const state = { shape:'tetra', rot:{x:0,y:0,z:0}, anim:{x:false,y:false,z:false} };
+
+  const stageSvg = document.getElementById('stageSvg');
+  const stageDynamic = document.getElementById('stageDynamic');
+  const orthoSvg = document.getElementById('orthoSvg');
+  const orthoDynamic = document.getElementById('orthoDynamic');
+  const shapeSelect = document.getElementById('shapeSelect');
+  const rotXSlider = document.getElementById('rotXSlider');
+  const rotYSlider = document.getElementById('rotYSlider');
+  const rotZSlider = document.getElementById('rotZSlider');
+  const animXCheck = document.getElementById('animXCheck');
+  const animYCheck = document.getElementById('animYCheck');
+  const animZCheck = document.getElementById('animZCheck');
+  const btnResetAll = document.getElementById('btnResetAll');
+  const infoBox = document.getElementById('infoBox');
+  const calcBox = document.getElementById('calcBox');
+
+  /* 구는 어떤 방향으로 돌려도 바닥 그림자가 항상 반지름 R인 정확한 원이므로,
+     점 샘플의 컨벡스헐로 "근사"하지 않고 수학적으로 정확한 원을 직접 만든다. */
+  function exactCircleHull(R, N){
+    const pts = [];
+    for(let i=0;i<N;i++){
+      const a = 2*Math.PI*i/N;
+      pts.push({ x:R*Math.cos(a), y:R*Math.sin(a) });
+    }
+    return pts;
+  }
+
+  function computeScene(){
+    const def = SHAPES[state.shape];
+    const local = def.build();
+    const maxR = Math.max(0.1, ...local.verts.map(p=>Math.hypot(p.x,p.y,p.z)));
+    const elev = maxR + ELEV_MARGIN;
+    const world = local.verts.map(p=>{
+      const r = applyRot(p, state.rot);
+      return { x:r.x, y:r.y, z:r.z + elev };
+    });
+    let hull, measure;
+    if(state.shape==='sphere'){
+      hull = exactCircleHull(SPHERE_R, 128);
+      measure = Math.PI*SPHERE_R*SPHERE_R;
+    } else {
+      const flat = world.map(p=>({x:p.x, y:p.y}));
+      hull = flat.length<=2 ? flat : convexHull2D(flat);
+      measure = 0;
+      if(hull.length>=3) measure = polyArea2D(hull);
+      else if(hull.length===2) measure = Math.hypot(hull[0].x-hull[1].x, hull[0].y-hull[1].y);
+    }
+    const faceAngle = def.bottomNormal ? tiltAngleDeg(def.bottomNormal, state.rot) : null;
+    return { def, local, world, hull, measure, elev, faceAngle };
+  }
+
+  function drawShadowShape(hull, projFn, clsPoly, clsLine, clsDot){
+    if(hull.length>=3){
+      return poly(hull.map(p=>projFn(p.x,p.y)), clsPoly);
+    } else if(hull.length===2 && Math.hypot(hull[0].x-hull[1].x, hull[0].y-hull[1].y)>1e-3){
+      const a=projFn(hull[0].x,hull[0].y), b=projFn(hull[1].x,hull[1].y);
+      return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="${clsLine}"/>`;
+    } else {
+      const c = hull[0] || {x:0,y:0};
+      const p = projFn(c.x,c.y);
+      return `<circle cx="${p.x}" cy="${p.y}" r="4" class="${clsDot}"/>`;
+    }
+  }
+
+  /* 구: 어느 각도에서 봐도 화면에 정확히 원으로 투영되므로, 점을 샘플링해 헐을 만드는 대신
+     중심과 반지름을 직접 계산한 완전한 원을 그린다 — 근사가 전혀 없는 정확한 모양.
+     반구: 돔 곡면은 일반적인 원뿔곡선이 아니므로, 아주 촘촘한 샘플의 컨벡스헐로 매끈하게 근사한다. */
+  function drawCurvedShape(shapeKey, local, world, elev){
+    let svg = '';
+    if(shapeKey==='sphere'){
+      const center = proj(0,0,elev);
+      const rPix = SPHERE_R*SCALE*zoomState.k;
+      svg += `<circle cx="${center.x}" cy="${center.y}" r="${rPix}" class="obj-silhouette"/>`;
+    } else {
+      const screenPts = world.map(V=>proj(V.x,V.y,V.z));
+      if(screenPts.length>=3){
+        const silhouette = convexHull2D(screenPts);
+        if(silhouette.length>=3) svg += poly(silhouette, 'obj-silhouette');
+      }
+      if(local.faces){
+        local.faces.forEach(face=>{
+          svg += poly(face.map(i=>proj(world[i].x,world[i].y,world[i].z)), 'obj-face');
+        });
+      }
+    }
+
+    const N = 40;
+    function guideCurve(localFn, cls){
+      const pts = [];
+      for(let i=0;i<=N;i++){
+        const p = localFn(i/N);
+        const r = applyRot(p, state.rot);
+        pts.push(proj(r.x, r.y, r.z+elev));
+      }
+      svg += polyline(pts, cls);
+    }
+
+    if(shapeKey==='sphere'){
+      [30,60,90,120,150].forEach(thetaDeg=>{
+        const th = thetaDeg*Math.PI/180;
+        guideCurve(t=>({ x:SPHERE_R*Math.sin(th)*Math.cos(2*Math.PI*t), y:SPHERE_R*Math.sin(th)*Math.sin(2*Math.PI*t), z:SPHERE_R*Math.cos(th) }), 'obj-guide');
+      });
+      [0,45,90,135].forEach(phiDeg=>{
+        const ph = phiDeg*Math.PI/180;
+        guideCurve(t=>({ x:SPHERE_R*Math.sin(Math.PI*t)*Math.cos(ph), y:SPHERE_R*Math.sin(Math.PI*t)*Math.sin(ph), z:SPHERE_R*Math.cos(Math.PI*t) }), 'obj-guide');
+      });
+    } else {
+      [0,90,180,270].forEach(phiDeg=>{
+        const ph = phiDeg*Math.PI/180;
+        guideCurve(t=>({ x:SPHERE_R*Math.sin(Math.PI/2*t)*Math.cos(ph), y:SPHERE_R*Math.sin(Math.PI/2*t)*Math.sin(ph), z:SPHERE_R*Math.cos(Math.PI/2*t) }), 'obj-guide');
+      });
+      [30,60].forEach(thetaDeg=>{
+        const th = thetaDeg*Math.PI/180;
+        guideCurve(t=>({ x:SPHERE_R*Math.sin(th)*Math.cos(2*Math.PI*t), y:SPHERE_R*Math.sin(th)*Math.sin(2*Math.PI*t), z:SPHERE_R*Math.cos(th) }), 'obj-guide');
+      });
+      guideCurve(t=>({ x:SPHERE_R*Math.cos(2*Math.PI*t), y:SPHERE_R*Math.sin(2*Math.PI*t), z:0 }), 'obj-rim');
+    }
+    return svg;
+  }
+
+  function drawMainStage({ def, local, world, hull, elev }){
+    let svg = '';
+    const floorC = [proj(-FLOOR_HALF,-FLOOR_HALF,0), proj(FLOOR_HALF,-FLOOR_HALF,0), proj(FLOOR_HALF,FLOOR_HALF,0), proj(-FLOOR_HALF,FLOOR_HALF,0)];
+    svg += poly(floorC, 'floor-plane');
+    for(let g=-FLOOR_HALF+FLOOR_GRID_STEP; g<FLOOR_HALF; g+=FLOOR_GRID_STEP){
+      const a=proj(g,-FLOOR_HALF,0), b=proj(g,FLOOR_HALF,0);
+      svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="floor-grid"/>`;
+      const c=proj(-FLOOR_HALF,g,0), d=proj(FLOOR_HALF,g,0);
+      svg += `<line x1="${c.x}" y1="${c.y}" x2="${d.x}" y2="${d.y}" class="floor-grid"/>`;
+    }
+
+    svg += drawShadowShape(hull, (x,y)=>proj(x,y,0), 'shadow-main', 'shadow-main-line', 'shadow-main-dot');
+
+    if(def.showDropLines){
+      world.forEach(V=>{
+        const top=proj(V.x,V.y,V.z), bot=proj(V.x,V.y,0);
+        svg += `<line x1="${top.x}" y1="${top.y}" x2="${bot.x}" y2="${bot.y}" class="drop-line"/>`;
+      });
+    }
+
+    const isCurved = (state.shape==='sphere' || state.shape==='hemi');
+    if(isCurved){
+      svg += drawCurvedShape(state.shape, local, world, elev);
+    } else {
+      if(local.faces){
+        local.faces.forEach(face=>{
+          svg += poly(face.map(i=>proj(world[i].x,world[i].y,world[i].z)), 'obj-face');
+        });
+      }
+      local.edges.forEach(([i,j])=>{
+        const a=proj(world[i].x,world[i].y,world[i].z), b=proj(world[j].x,world[j].y,world[j].z);
+        svg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="obj-wire"/>`;
+      });
+    }
+
+    const topPoint = world.reduce((a,b)=> b.z>a.z ? b : a, world[0]);
+    svg += labelAt(proj(topPoint.x,topPoint.y,topPoint.z), def.label, 'scene-label', 8, -10);
+    if(hull.length){
+      let cx=0, cy=0; hull.forEach(p=>{cx+=p.x; cy+=p.y;}); cx/=hull.length; cy/=hull.length;
+      svg += labelAt(proj(cx,cy,0), '정사영', 'scene-label-sm', -14, 16);
+    }
+
+    stageDynamic.innerHTML = svg;
+  }
+
+  function drawOrthoPanel({ hull }){
+    const ORG = { x:130, y:130 };
+    const pts = hull.length ? hull : [{x:0,y:0}];
+    const ext = Math.max(1, ...pts.map(p=>Math.hypot(p.x,p.y)));
+    const s = Math.min(42, 110/ext);
+    const oproj = (x,y)=> ({ x: ORG.x + x*s, y: ORG.y - y*s });
+
+    let svg = '';
+    const gmax = Math.ceil(ext);
+    for(let g=-gmax; g<=gmax; g++){
+      if(g===0) continue;
+      const gx = oproj(g,0), gy = oproj(0,g);
+      svg += `<line x1="${gx.x}" y1="10" x2="${gx.x}" y2="250" class="ortho-grid"/>`;
+      svg += `<line x1="10" y1="${gy.y}" x2="250" y2="${gy.y}" class="ortho-grid"/>`;
+    }
+    svg += `<line x1="10" y1="${ORG.y}" x2="250" y2="${ORG.y}" class="ortho-axis"/>`;
+    svg += `<line x1="${ORG.x}" y1="10" x2="${ORG.x}" y2="250" class="ortho-axis"/>`;
+    svg += `<text x="240" y="${ORG.y-8}" class="ortho-axis-label">x</text>`;
+    svg += `<text x="${ORG.x+8}" y="20" class="ortho-axis-label">y</text>`;
+
+    svg += drawShadowShape(hull, oproj, 'ortho-fill', 'ortho-fill-line', 'ortho-fill-dot');
+
+    orthoDynamic.innerHTML = svg;
+  }
+
+  function updateInfoBox(scene){
+    const { def, measure, faceAngle } = scene;
+    let html = `도형: <b>${def.label}</b>`;
+    html += `<br>회전각 — x:${numFmt(state.rot.x,0)}° y:${numFmt(state.rot.y,0)}° z:${numFmt(state.rot.z,0)}°`;
+    if(faceAngle!==null && faceAngle!==undefined){
+      html += `<br>바닥면과 바닥이 이루는 각도 ≈ ${numFmt(faceAngle,1)}°`;
+    }
+    if(def.baseArea!==undefined){
+      html += `<br>대표 면(바닥면)의 넓이 ${KX('S='+numFmt(def.baseArea,2))}`;
+    }
+    if(def.dim===1){
+      html += `<br>선분의 길이 ${KX('L='+numFmt(def.baseLen,2))}, 지금 정사영 길이 ${KX("L'\\approx"+numFmt(measure,2))}`;
+    } else {
+      html += `<br>지금 정사영 넓이 ${KX("S'\\approx"+numFmt(measure,2))}`;
+      if(state.shape==='sphere'){
+        html += `<br><span class="success">✅ 구는 어떻게 돌려도 정사영이 항상 같은 원입니다.</span>`;
+      }
+    }
+    infoBox.innerHTML = html;
+  }
+
+  function render(){
+    const scene = computeScene();
+    drawMainStage(scene);
+    drawOrthoPanel(scene);
+    updateInfoBox(scene);
+  }
+
+  function renderCalc(){
+    const def = SHAPES[state.shape];
+    const scene = computeScene();
+    if(def.kind==='flat'){
+      if(def.dim===1){
+        // 선분은 "방향 벡터"가 기준이므로, 평면 도형의 법선 각도(tiltAngleDeg)와는
+        // 보각(90°-φ) 관계: 수직축에서 벗어난 각 φ만큼 바닥 쪽으로 누우면 θ=90°-φ.
+        const phi = tiltAngleDeg({x:1,y:0,z:0}, state.rot);
+        const th = 90 - phi;
+        const thR = th*Math.PI/180;
+        const Lp = def.baseLen*Math.cos(thR);
+        calcBox.innerHTML = `${KX("L'=L\\cos\\theta="+numFmt(def.baseLen,2)+"\\times\\cos"+numFmt(th,0)+"^\\circ\\approx"+numFmt(Lp,2))}`
+          + `<br>지금 실제로 측정된 값 ≈ ${numFmt(scene.measure,2)} (공식과 거의 같아야 합니다)`;
+      } else {
+        const th = scene.faceAngle;
+        const thR = th*Math.PI/180;
+        const Sp = def.baseArea*Math.cos(thR);
+        calcBox.innerHTML = `${KX("S'=S\\cos\\theta="+numFmt(def.baseArea,2)+"\\times\\cos"+numFmt(th,0)+"^\\circ\\approx"+numFmt(Sp,2))}`
+          + `<br>지금 실제로 측정된 값 ≈ ${numFmt(scene.measure,2)} (공식과 거의 같아야 합니다)`;
+      }
+    } else {
+      let note = '이 도형은 ' + KX("S'=S\\cos\\theta") + ' 공식이 적용되지 않습니다. 회전 각도에 따라 정사영의 모양과 넓이가 복잡하게 변합니다.';
+      if(state.shape==='sphere') note = '구는 회전과 무관하게 항상 같은 원이 투영됩니다 — 공식이 필요 없을 만큼 특별한 경우입니다.';
+      calcBox.innerHTML = `${note}<br>지금 정사영 넓이 ≈ ${numFmt(scene.measure,2)}`;
+    }
+  }
+
+  document.getElementById('proofStatic').innerHTML = `
+    <p>평면도형(2차원 원, 직각삼각형, 선분)이 바닥과 이루는 각을 θ라고 하면, 정사영의 넓이(또는 길이)는 항상 다음 관계를 만족합니다.</p>
+    <div class="proof-formula">${KX("S'=S\\cos\\theta")}</div>
+    <p>예를 들어 반지름 r인 원은 ${KX("S'=\\pi r^2\\cos\\theta")}, 직각삼각형(밑변 a, 높이 b)은 ${KX("S'=\\tfrac12 ab\\cos\\theta")}이 됩니다. 선분(길이 L)은 1차원이므로 넓이 대신 길이가 ${KX("L'=L\\cos\\theta")}로 줄어들고, θ=90°(바닥과 수직)이면 한 점으로 줄어듭니다.</p>
+    <p>반면 정사면체 · 정육면체 · 반구 같은 입체는 이 공식이 적용되지 않고, 회전 각도에 따라 정사영의 모양과 넓이가 복잡하게 변합니다. 특히 <b>구는 어느 방향으로 돌려도 정사영이 항상 반지름이 같은 원</b>입니다 — 구의 대칭성 때문입니다.</p>
+  `;
+
+  shapeSelect.addEventListener('change', ()=>{ state.shape = shapeSelect.value; render(); renderCalc(); });
+  rotXSlider.addEventListener('input', ()=>{ state.rot.x = +rotXSlider.value; render(); renderCalc(); });
+  rotYSlider.addEventListener('input', ()=>{ state.rot.y = +rotYSlider.value; render(); renderCalc(); });
+  rotZSlider.addEventListener('input', ()=>{ state.rot.z = +rotZSlider.value; render(); renderCalc(); });
+
+  /* ═══ 축 자동 회전 애니메이션 ═══ */
+  let animHandle = null;
+  function anyAnimating(){ return state.anim.x || state.anim.y || state.anim.z; }
+  function syncAxisSliders(){
+    rotXSlider.value = Math.round(state.rot.x);
+    rotYSlider.value = Math.round(state.rot.y);
+    rotZSlider.value = Math.round(state.rot.z);
+  }
+  function animLoop(){
+    let changed = false;
+    ['x','y','z'].forEach(ax=>{
+      if(state.anim[ax]){ state.rot[ax] = (state.rot[ax]+1.0)%360; changed = true; }
+    });
+    if(changed){ syncAxisSliders(); render(); renderCalc(); }
+    animHandle = anyAnimating() ? requestAnimationFrame(animLoop) : null;
+  }
+  function setAxisAnim(ax, checked){
+    state.anim[ax] = checked;
+    ({x:rotXSlider, y:rotYSlider, z:rotZSlider})[ax].disabled = checked;
+    if(checked && animHandle===null) animHandle = requestAnimationFrame(animLoop);
+  }
+  animXCheck.addEventListener('change', e=> setAxisAnim('x', e.target.checked));
+  animYCheck.addEventListener('change', e=> setAxisAnim('y', e.target.checked));
+  animZCheck.addEventListener('change', e=> setAxisAnim('z', e.target.checked));
+
+  btnResetAll.addEventListener('click', ()=>{
+    view.az = 0; view.el = EL_DEFAULT; zoomState.k = ZOOM_DEFAULT;
+    state.rot = {x:0,y:0,z:0};
+    state.anim = {x:false,y:false,z:false};
+    animXCheck.checked = animYCheck.checked = animZCheck.checked = false;
+    rotXSlider.disabled = rotYSlider.disabled = rotZSlider.disabled = false;
+    syncAxisSliders();
+    if(animHandle){ cancelAnimationFrame(animHandle); animHandle = null; }
+    render(); renderCalc();
+  });
+
+  /* ═══ 드래그 회전 + 휠/핀치 확대·축소 ═══ */
+  const stageWrap = document.querySelector('.stage-wrap');
+  const DRAG_SENS = 0.008;
+  const activePointers = new Map();
+  let dragging = false, lastX = 0, lastY = 0;
+  let pinchStartDist = null, pinchStartZoom = 1;
+  const ptDist = (a,b)=> Math.hypot(a.x-b.x, a.y-b.y);
+
+  function onPointerDown(e){
+    e.preventDefault();
+    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    stageSvg.setPointerCapture(e.pointerId);
+    if(activePointers.size===1){
+      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      stageWrap.classList.add('dragging');
+    } else if(activePointers.size===2){
+      dragging = false;
+      const pts = [...activePointers.values()];
+      pinchStartDist = ptDist(pts[0], pts[1]);
+      pinchStartZoom = zoomState.k;
+    }
+  }
+  function onPointerMove(e){
+    if(!activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+    if(activePointers.size>=2){
+      const pts = [...activePointers.values()];
+      const d = ptDist(pts[0], pts[1]);
+      if(pinchStartDist){
+        zoomState.k = clamp(pinchStartZoom*(d/pinchStartDist), zoomState.MIN, zoomState.MAX);
+        render();
+      }
+      return;
+    }
+    if(!dragging) return;
+    const dx = e.clientX-lastX, dy = e.clientY-lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    view.az = ((view.az + dx*DRAG_SENS + Math.PI) % (2*Math.PI) + 2*Math.PI) % (2*Math.PI) - Math.PI;
+    view.el = clamp(view.el - dy*DRAG_SENS, EL_MIN, EL_MAX);
+    render();
+  }
+  function onPointerUp(e){
+    activePointers.delete(e.pointerId);
+    if(activePointers.size<2) pinchStartDist = null;
+    if(activePointers.size===0){
+      dragging = false;
+      stageWrap.classList.remove('dragging');
+    } else if(activePointers.size===1){
+      const p = [...activePointers.values()][0];
+      dragging = true; lastX = p.x; lastY = p.y;
+    }
+  }
+  stageSvg.addEventListener('pointerdown', onPointerDown);
+  stageSvg.addEventListener('pointermove', onPointerMove);
+  stageSvg.addEventListener('pointerup', onPointerUp);
+  stageSvg.addEventListener('pointercancel', onPointerUp);
+  stageSvg.addEventListener('wheel', e=>{
+    e.preventDefault();
+    zoomState.k = clamp(zoomState.k*Math.exp(-e.deltaY*0.0015), zoomState.MIN, zoomState.MAX);
+    render();
+  }, {passive:false});
+
+  /* ═══ 퀴즈 ═══ */
+  const QUIZ_BASE = [
+    { promptHtml: `정사영의 정의로 가장 알맞은 것은?`,
+      choices: ['도형의 각 점에서 평면에 내린 수선의 발들을 모은 도형', '도형을 정면에서 바라본 그림자', '광원이 만드는 그림자', '도형을 평면에 평행이동한 도형'], answer:0,
+      explainHtml: `정사영은 도형의 모든 점에서 평면에 내린 수선의 발들의 집합입니다. 광원과는 무관한, 순수하게 기하학적인 개념입니다.` },
+    { promptHtml: `구를 어떤 방향으로 회전시켜도 정사영이 변하지 않는 이유는?`,
+      choices: ['구는 모든 방향에서 같은 모양으로 보이는 대칭도형이기 때문이다', '구는 평평한 도형이기 때문이다', '구는 회전하지 않기 때문이다', '정사영은 원래 변하지 않는 개념이기 때문이다'], answer:0,
+      explainHtml: `구는 어느 축으로 돌려도 똑같은 공 모양이므로, 바닥에 내린 정사영은 항상 반지름이 같은 원입니다.` },
+    { promptHtml: `반지름이 3인 2차원 원을 θ=60°만큼 기울이면 정사영의 넓이는?`,
+      choices: [numFmt(Math.PI*9*0.5,2), numFmt(Math.PI*9,2), '0', numFmt(Math.PI*9*Math.sqrt(3)/2,2)], answer:0,
+      explainHtml: `${KX("S'=\\pi r^2\\cos\\theta=9\\pi\\times\\cos60^\\circ=9\\pi\\times0.5\\approx"+numFmt(Math.PI*9*0.5,2))} 입니다.` },
+    { promptHtml: `선분을 바닥과 수직(θ=90°)이 되도록 세우면 정사영은 어떤 모양이 될까요?`,
+      choices: ['한 점', '원래 길이와 같은 선분', '원래보다 긴 선분', '사라져서 아무것도 안 보인다'], answer:0,
+      explainHtml: `${KX("L'=L\\cos90^\\circ=0")} 이므로 정사영은 길이가 0인 한 점이 됩니다.` },
+    { promptHtml: `정육면체를 x, y, z축 모두 동시에 회전시키면 정사영의 넓이는 어떻게 변할까요?`,
+      choices: ['회전 각도에 따라 복잡하게 계속 변하며 간단한 공식이 없다', '항상 S cosθ 공식을 따른다', '항상 변하지 않는다', '항상 0이 된다'], answer:0,
+      explainHtml: `정육면체 같은 입체는 평면도형의 S′=Scosθ 공식이 적용되지 않고, 회전 각도에 따라 정사영의 모양과 넓이가 복잡하게 바뀝니다.` },
+    { promptHtml: `반구의 평평한 면이 바닥과 평행하게 놓이면 정사영은 어떤 모양일까요?`,
+      choices: ['반구의 반지름과 같은 반지름을 가진 원', '반원', '반구 반지름의 절반인 원', '타원'], answer:0,
+      explainHtml: `평평한 면이 바닥과 나란하면 반구의 둥근 테두리(반지름 r인 원)가 그대로 바닥에 투영되어 반지름 r인 원이 됩니다.` }
+  ];
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+    return arr;
+  }
+
+  let quiz = { idx:0, correct:0, answered:false, set:[] };
+  const quizArea = document.getElementById('quizArea');
+
+  function startQuiz(){
+    quiz.idx=0; quiz.correct=0; quiz.answered=false;
+    quiz.set = QUIZ_BASE.map(q=>{
+      const order = shuffle([0,1,2,3]);
+      return { promptHtml:q.promptHtml, explainHtml:q.explainHtml,
+        choices: order.map(i=>q.choices[i]), answer: order.indexOf(q.answer) };
+    });
+    renderQuiz();
+  }
+
+  function renderQuiz(){
+    const q = quiz.set[quiz.idx];
+    let html = `<div class="quiz-progress">${quiz.idx+1} / ${quiz.set.length} 문제</div>`;
+    html += `<span class="quiz-badge">정사영</span>`;
+    html += `<div class="quiz-prompt">${q.promptHtml}</div>`;
+    q.choices.forEach((c,i)=>{
+      let cls = 'choice-btn';
+      if(quiz.answered){
+        if(i===q.answer) cls += ' correct';
+        else if(i===quiz.picked) cls += ' wrong';
+      }
+      html += `<button class="${cls}" data-i="${i}" ${quiz.answered?'disabled':''}>${c}</button>`;
+    });
+    if(quiz.answered){
+      html += `<div class="quiz-explain">${quiz.picked===q.answer ? '✅ 정답!' : '❌ 오답입니다.'} ${q.explainHtml}</div>`;
+      html += `<div class="btn-row" style="margin-top:1rem;"><button class="btn-ctrl active" id="btnNextQ">${quiz.idx+1 < quiz.set.length ? '다음 문제 →' : '결과 보기 →'}</button></div>`;
+    }
+    quizArea.innerHTML = html;
+
+    quizArea.querySelectorAll('.choice-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(quiz.answered) return;
+        quiz.answered = true;
+        quiz.picked = +btn.dataset.i;
+        if(quiz.picked === q.answer) quiz.correct++;
+        renderQuiz();
+      });
+    });
+    const nextBtn = document.getElementById('btnNextQ');
+    if(nextBtn) nextBtn.addEventListener('click', ()=>{
+      quiz.idx++; quiz.answered=false;
+      if(quiz.idx >= quiz.set.length) renderQuizResult(); else renderQuiz();
+    });
+  }
+
+  function renderQuizResult(){
+    quizArea.innerHTML = `
+      <div class="quiz-result">
+        <div class="score">${quiz.correct} / ${quiz.set.length}</div>
+        <p style="color:#666;margin-bottom:1rem;">문제를 맞혔습니다.</p>
+        <button class="btn-ctrl active" id="btnRetry">↺ 다시 풀기</button>
+      </div>`;
+    document.getElementById('btnRetry').addEventListener('click', startQuiz);
+  }
+
+  /* ═══ 초기화 ═══ */
+  render();
+  renderCalc();
+  startQuiz();
+})();
+</script>
+</body>
+</html>
